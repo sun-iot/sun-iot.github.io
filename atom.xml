@@ -3,11 +3,11 @@
   <title>南风意未起</title>
   
   <subtitle>开发实习生</subtitle>
-  <link href="https://sun-iot.gitee.io/atom.xml" rel="self"/>
+  <link href="http://www.blog.sun-iot.xyz/atom.xml" rel="self"/>
   
-  <link href="https://sun-iot.gitee.io/"/>
+  <link href="http://www.blog.sun-iot.xyz/"/>
   <updated>2020-12-23T06:36:48.000Z</updated>
-  <id>https://sun-iot.gitee.io/</id>
+  <id>http://www.blog.sun-iot.xyz/</id>
   
   <author>
     <name>开发实习生</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>【源码阅读】Alertmanager接收Alerts</title>
-    <link href="https://sun-iot.gitee.io/posts/a5f7e1a4"/>
-    <id>https://sun-iot.gitee.io/posts/a5f7e1a4</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/a5f7e1a4"/>
+    <id>http://www.blog.sun-iot.xyz/posts/a5f7e1a4</id>
     <published>2020-12-23T06:36:48.000Z</published>
     <updated>2020-12-23T06:36:48.000Z</updated>
     
@@ -33,17 +33,17 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Alertmanager" scheme="https://sun-iot.gitee.io/tags/Alertmanager/"/>
+    <category term="Alertmanager" scheme="http://www.blog.sun-iot.xyz/tags/Alertmanager/"/>
     
   </entry>
   
   <entry>
     <title>Alertmanager告警流程分析</title>
-    <link href="https://sun-iot.gitee.io/posts/dc144ade"/>
-    <id>https://sun-iot.gitee.io/posts/dc144ade</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/dc144ade"/>
+    <id>http://www.blog.sun-iot.xyz/posts/dc144ade</id>
     <published>2020-12-23T03:03:06.000Z</published>
     <updated>2020-12-23T03:03:06.000Z</updated>
     
@@ -57,34 +57,34 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Alertmanager" scheme="https://sun-iot.gitee.io/tags/Alertmanager/"/>
+    <category term="Alertmanager" scheme="http://www.blog.sun-iot.xyz/tags/Alertmanager/"/>
     
   </entry>
   
   <entry>
     <title>Linux数据盘挂载</title>
-    <link href="https://sun-iot.gitee.io/posts/9aa81cdc"/>
-    <id>https://sun-iot.gitee.io/posts/9aa81cdc</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/9aa81cdc"/>
+    <id>http://www.blog.sun-iot.xyz/posts/9aa81cdc</id>
     <published>2020-12-23T03:01:30.000Z</published>
     <updated>2020-12-23T03:01:30.000Z</updated>
     
     
     
     
-    <category term="Liunx" scheme="https://sun-iot.gitee.io/categories/Liunx/"/>
+    <category term="Liunx" scheme="http://www.blog.sun-iot.xyz/categories/Liunx/"/>
     
     
-    <category term="Linux" scheme="https://sun-iot.gitee.io/tags/Linux/"/>
+    <category term="Linux" scheme="http://www.blog.sun-iot.xyz/tags/Linux/"/>
     
   </entry>
   
   <entry>
     <title>InfluxDB 数据迁移方案测试以及风险性评估</title>
-    <link href="https://sun-iot.gitee.io/posts/55aac069"/>
-    <id>https://sun-iot.gitee.io/posts/55aac069</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/55aac069"/>
+    <id>http://www.blog.sun-iot.xyz/posts/55aac069</id>
     <published>2020-12-10T01:03:48.000Z</published>
     <updated>2020-12-10T01:03:48.000Z</updated>
     
@@ -98,17 +98,17 @@
     
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/categories/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/categories/InfluxDB/"/>
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/tags/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/tags/InfluxDB/"/>
     
   </entry>
   
   <entry>
     <title>Influx-Proxy部署流程以及风险点分析</title>
-    <link href="https://sun-iot.gitee.io/posts/51eb7ca"/>
-    <id>https://sun-iot.gitee.io/posts/51eb7ca</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/51eb7ca"/>
+    <id>http://www.blog.sun-iot.xyz/posts/51eb7ca</id>
     <published>2020-12-10T01:02:46.000Z</published>
     <updated>2020-12-10T01:02:46.000Z</updated>
     
@@ -122,17 +122,17 @@
     
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/categories/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/categories/InfluxDB/"/>
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/tags/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/tags/InfluxDB/"/>
     
   </entry>
   
   <entry>
     <title>influx-proxy无侵入式InfluxDB高可用方案测试</title>
-    <link href="https://sun-iot.gitee.io/posts/61185b64"/>
-    <id>https://sun-iot.gitee.io/posts/61185b64</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/61185b64"/>
+    <id>http://www.blog.sun-iot.xyz/posts/61185b64</id>
     <published>2020-12-10T01:01:49.000Z</published>
     <updated>2020-12-10T01:01:49.000Z</updated>
     
@@ -146,17 +146,17 @@
     
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/categories/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/categories/InfluxDB/"/>
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/tags/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/tags/InfluxDB/"/>
     
   </entry>
   
   <entry>
     <title>InfluxDB集群化方案之influx-proxy的说明</title>
-    <link href="https://sun-iot.gitee.io/posts/2755494b"/>
-    <id>https://sun-iot.gitee.io/posts/2755494b</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/2755494b"/>
+    <id>http://www.blog.sun-iot.xyz/posts/2755494b</id>
     <published>2020-12-10T00:58:19.000Z</published>
     <updated>2020-12-10T00:58:19.000Z</updated>
     
@@ -170,17 +170,17 @@
     
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/categories/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/categories/InfluxDB/"/>
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/tags/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/tags/InfluxDB/"/>
     
   </entry>
   
   <entry>
     <title>InlfuxDB的权限验证添加</title>
-    <link href="https://sun-iot.gitee.io/posts/7ac1690f"/>
-    <id>https://sun-iot.gitee.io/posts/7ac1690f</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/7ac1690f"/>
+    <id>http://www.blog.sun-iot.xyz/posts/7ac1690f</id>
     <published>2020-12-09T03:20:05.000Z</published>
     <updated>2020-12-09T03:20:05.000Z</updated>
     
@@ -194,17 +194,17 @@
     
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/categories/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/categories/InfluxDB/"/>
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/tags/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/tags/InfluxDB/"/>
     
   </entry>
   
   <entry>
     <title>InfluxDB-UDP配置中的缓冲区修改</title>
-    <link href="https://sun-iot.gitee.io/posts/eb2dd83b"/>
-    <id>https://sun-iot.gitee.io/posts/eb2dd83b</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/eb2dd83b"/>
+    <id>http://www.blog.sun-iot.xyz/posts/eb2dd83b</id>
     <published>2020-12-03T05:36:44.000Z</published>
     <updated>2020-12-03T05:36:44.000Z</updated>
     
@@ -218,17 +218,17 @@
     
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/categories/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/categories/InfluxDB/"/>
     
     
-    <category term="InfluxDB" scheme="https://sun-iot.gitee.io/tags/InfluxDB/"/>
+    <category term="InfluxDB" scheme="http://www.blog.sun-iot.xyz/tags/InfluxDB/"/>
     
   </entry>
   
   <entry>
     <title>MD</title>
-    <link href="https://sun-iot.gitee.io/posts/75bfa63e"/>
-    <id>https://sun-iot.gitee.io/posts/75bfa63e</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/75bfa63e"/>
+    <id>http://www.blog.sun-iot.xyz/posts/75bfa63e</id>
     <published>2020-11-11T01:16:25.000Z</published>
     <updated>2020-11-11T01:16:25.000Z</updated>
     
@@ -248,8 +248,8 @@
   
   <entry>
     <title>ETCD</title>
-    <link href="https://sun-iot.gitee.io/posts/4cde6830"/>
-    <id>https://sun-iot.gitee.io/posts/4cde6830</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/4cde6830"/>
+    <id>http://www.blog.sun-iot.xyz/posts/4cde6830</id>
     <published>2020-11-05T08:24:50.000Z</published>
     <updated>2020-11-05T08:24:50.000Z</updated>
     
@@ -264,17 +264,17 @@
     
     
     
-    <category term="ETCD" scheme="https://sun-iot.gitee.io/categories/ETCD/"/>
+    <category term="ETCD" scheme="http://www.blog.sun-iot.xyz/categories/ETCD/"/>
     
     
-    <category term="ETCD" scheme="https://sun-iot.gitee.io/tags/ETCD/"/>
+    <category term="ETCD" scheme="http://www.blog.sun-iot.xyz/tags/ETCD/"/>
     
   </entry>
   
   <entry>
     <title>Docker部署安装cadvisor</title>
-    <link href="https://sun-iot.gitee.io/posts/2c232d23"/>
-    <id>https://sun-iot.gitee.io/posts/2c232d23</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/2c232d23"/>
+    <id>http://www.blog.sun-iot.xyz/posts/2c232d23</id>
     <published>2020-10-29T01:21:52.000Z</published>
     <updated>2020-10-29T01:21:52.000Z</updated>
     
@@ -288,19 +288,19 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/tags/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/tags/Prometheus/"/>
     
-    <category term="Cadvisor" scheme="https://sun-iot.gitee.io/tags/Cadvisor/"/>
+    <category term="Cadvisor" scheme="http://www.blog.sun-iot.xyz/tags/Cadvisor/"/>
     
   </entry>
   
   <entry>
     <title>Docker部署安装node_exporter</title>
-    <link href="https://sun-iot.gitee.io/posts/54c68afc"/>
-    <id>https://sun-iot.gitee.io/posts/54c68afc</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/54c68afc"/>
+    <id>http://www.blog.sun-iot.xyz/posts/54c68afc</id>
     <published>2020-10-29T01:18:48.000Z</published>
     <updated>2020-10-29T01:18:48.000Z</updated>
     
@@ -314,19 +314,19 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/tags/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/tags/Prometheus/"/>
     
-    <category term="Node_Exporter" scheme="https://sun-iot.gitee.io/tags/Node-Exporter/"/>
+    <category term="Node_Exporter" scheme="http://www.blog.sun-iot.xyz/tags/Node-Exporter/"/>
     
   </entry>
   
   <entry>
     <title>Firefox浏览器的速度优化体验</title>
-    <link href="https://sun-iot.gitee.io/posts/e481361e"/>
-    <id>https://sun-iot.gitee.io/posts/e481361e</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/e481361e"/>
+    <id>http://www.blog.sun-iot.xyz/posts/e481361e</id>
     <published>2020-10-23T01:27:31.000Z</published>
     <updated>2020-10-23T01:27:31.000Z</updated>
     
@@ -340,17 +340,17 @@
     
     
     
-    <category term="工具" scheme="https://sun-iot.gitee.io/categories/%E5%B7%A5%E5%85%B7/"/>
+    <category term="工具" scheme="http://www.blog.sun-iot.xyz/categories/%E5%B7%A5%E5%85%B7/"/>
     
     
-    <category term="Firefox" scheme="https://sun-iot.gitee.io/tags/Firefox/"/>
+    <category term="Firefox" scheme="http://www.blog.sun-iot.xyz/tags/Firefox/"/>
     
   </entry>
   
   <entry>
     <title>Git切换远程分支</title>
-    <link href="https://sun-iot.gitee.io/posts/a6c9b8b3"/>
-    <id>https://sun-iot.gitee.io/posts/a6c9b8b3</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/a6c9b8b3"/>
+    <id>http://www.blog.sun-iot.xyz/posts/a6c9b8b3</id>
     <published>2020-10-22T06:28:47.000Z</published>
     <updated>2020-10-22T06:28:47.000Z</updated>
     
@@ -364,17 +364,17 @@
     
     
     
-    <category term="Git" scheme="https://sun-iot.gitee.io/categories/Git/"/>
+    <category term="Git" scheme="http://www.blog.sun-iot.xyz/categories/Git/"/>
     
     
-    <category term="Git" scheme="https://sun-iot.gitee.io/tags/Git/"/>
+    <category term="Git" scheme="http://www.blog.sun-iot.xyz/tags/Git/"/>
     
   </entry>
   
   <entry>
     <title>Git设置代理</title>
-    <link href="https://sun-iot.gitee.io/posts/cb59751e"/>
-    <id>https://sun-iot.gitee.io/posts/cb59751e</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/cb59751e"/>
+    <id>http://www.blog.sun-iot.xyz/posts/cb59751e</id>
     <published>2020-10-22T06:18:47.000Z</published>
     <updated>2020-10-22T06:18:47.000Z</updated>
     
@@ -391,17 +391,17 @@
     
     
     
-    <category term="Git" scheme="https://sun-iot.gitee.io/categories/Git/"/>
+    <category term="Git" scheme="http://www.blog.sun-iot.xyz/categories/Git/"/>
     
     
-    <category term="Git" scheme="https://sun-iot.gitee.io/tags/Git/"/>
+    <category term="Git" scheme="http://www.blog.sun-iot.xyz/tags/Git/"/>
     
   </entry>
   
   <entry>
     <title>MySQL8.0 连接错误</title>
-    <link href="https://sun-iot.gitee.io/posts/c165abee"/>
-    <id>https://sun-iot.gitee.io/posts/c165abee</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/c165abee"/>
+    <id>http://www.blog.sun-iot.xyz/posts/c165abee</id>
     <published>2020-10-13T10:45:37.000Z</published>
     <updated>2020-10-13T10:45:37.000Z</updated>
     
@@ -415,17 +415,17 @@
     
     
     
-    <category term="MySQL" scheme="https://sun-iot.gitee.io/categories/MySQL/"/>
+    <category term="MySQL" scheme="http://www.blog.sun-iot.xyz/categories/MySQL/"/>
     
     
-    <category term="MySQL" scheme="https://sun-iot.gitee.io/tags/MySQL/"/>
+    <category term="MySQL" scheme="http://www.blog.sun-iot.xyz/tags/MySQL/"/>
     
   </entry>
   
   <entry>
     <title>【监控】Prometheus服务端启动参数</title>
-    <link href="https://sun-iot.gitee.io/posts/33c82a04"/>
-    <id>https://sun-iot.gitee.io/posts/33c82a04</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/33c82a04"/>
+    <id>http://www.blog.sun-iot.xyz/posts/33c82a04</id>
     <published>2020-09-30T03:54:17.000Z</published>
     <updated>2020-09-30T03:54:17.000Z</updated>
     
@@ -440,17 +440,17 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/tags/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/tags/Prometheus/"/>
     
   </entry>
   
   <entry>
     <title>【监控】Prometheus采集方式PushGateway</title>
-    <link href="https://sun-iot.gitee.io/posts/f13926ae"/>
-    <id>https://sun-iot.gitee.io/posts/f13926ae</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/f13926ae"/>
+    <id>http://www.blog.sun-iot.xyz/posts/f13926ae</id>
     <published>2020-09-30T03:53:17.000Z</published>
     <updated>2020-09-30T03:53:17.000Z</updated>
     
@@ -465,17 +465,17 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/tags/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/tags/Prometheus/"/>
     
   </entry>
   
   <entry>
     <title>【监控】Prometheus热部署配置</title>
-    <link href="https://sun-iot.gitee.io/posts/fdc2a5aa"/>
-    <id>https://sun-iot.gitee.io/posts/fdc2a5aa</id>
+    <link href="http://www.blog.sun-iot.xyz/posts/fdc2a5aa"/>
+    <id>http://www.blog.sun-iot.xyz/posts/fdc2a5aa</id>
     <published>2020-09-30T03:51:12.000Z</published>
     <updated>2020-09-30T03:51:12.000Z</updated>
     
@@ -493,10 +493,10 @@
     
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/categories/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
     
     
-    <category term="Prometheus" scheme="https://sun-iot.gitee.io/tags/Prometheus/"/>
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/tags/Prometheus/"/>
     
   </entry>
   
