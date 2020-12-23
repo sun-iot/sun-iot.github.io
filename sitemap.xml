@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://sun-iot.gitee.io/posts/a5f7e1a4</loc>
+    
+    <lastmod>2020-12-23</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://sun-iot.gitee.io/posts/dc144ade</loc>
     
     <lastmod>2020-12-23</lastmod>
@@ -2195,14 +2202,14 @@
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/tags/InfluxDB/</loc>
+    <loc>https://sun-iot.gitee.io/tags/Kafka/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/tags/Kafka/</loc>
+    <loc>https://sun-iot.gitee.io/tags/InfluxDB/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2412,13 +2419,6 @@
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/tags/PHP/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://sun-iot.gitee.io/tags/Java/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2461,6 +2461,13 @@
   </url>
   
   <url>
+    <loc>https://sun-iot.gitee.io/tags/PHP/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://sun-iot.gitee.io/tags/Python/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2482,21 +2489,7 @@
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/tags/Kubernetes/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://sun-iot.gitee.io/tags/Linux/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://sun-iot.gitee.io/tags/Kubesphere/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2518,6 +2511,20 @@
   
   <url>
     <loc>https://sun-iot.gitee.io/tags/cAdvisor/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://sun-iot.gitee.io/tags/Kubernetes/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://sun-iot.gitee.io/tags/Kubesphere/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2736,14 +2743,14 @@
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/categories/InfluxDB/</loc>
+    <loc>https://sun-iot.gitee.io/categories/Kafka/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/categories/Kafka/</loc>
+    <loc>https://sun-iot.gitee.io/categories/InfluxDB/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2848,14 +2855,14 @@
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/categories/PHP/</loc>
+    <loc>https://sun-iot.gitee.io/categories/Java/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/categories/Java/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</loc>
+    <loc>https://sun-iot.gitee.io/categories/PHP/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2876,20 +2883,6 @@
   </url>
   
   <url>
-    <loc>https://sun-iot.gitee.io/categories/Kubernetes/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://sun-iot.gitee.io/categories/Kubesphere/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://sun-iot.gitee.io/categories/Docker/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2898,6 +2891,20 @@
   
   <url>
     <loc>https://sun-iot.gitee.io/categories/Monitor/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://sun-iot.gitee.io/categories/Kubernetes/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://sun-iot.gitee.io/categories/Kubesphere/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
