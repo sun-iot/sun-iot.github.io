@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://www.blog.sun-iot.xyz/posts/52f6a02b</loc>
+    
+    <lastmod>2020-12-23</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.blog.sun-iot.xyz/posts/a5f7e1a4</loc>
     
     <lastmod>2020-12-23</lastmod>
@@ -2041,13 +2048,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/Redis/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/tags/MySQL/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2076,7 +2076,7 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/DataWoreHouse/</loc>
+    <loc>http://www.blog.sun-iot.xyz/tags/Redis/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2091,6 +2091,27 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/SpringBoot/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/DataWoreHouse/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/GoLand/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2112,13 +2133,6 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/%E8%BF%90%E7%BB%B4/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/ETCD/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2147,6 +2161,13 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Logstash/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/ETCD/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2287,20 +2308,6 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Zookeeper/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/GoLand/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2517,20 +2524,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/Kubernetes/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/Kubesphere/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Screen/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2546,6 +2539,20 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Interview/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/Kubernetes/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/Kubesphere/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2673,14 +2680,14 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Java/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/MySQL/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/MySQL/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/Java/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2694,6 +2701,13 @@
   </url>
   
   <url>
+    <loc>http://www.blog.sun-iot.xyz/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://www.blog.sun-iot.xyz/categories/NoSQL/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2701,14 +2715,14 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/ETCD/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/ELK/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/ELK/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/ETCD/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2764,13 +2778,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Prometheus/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/categories/ELK/Elastaticsearch/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2785,6 +2792,13 @@
   </url>
   
   <url>
+    <loc>http://www.blog.sun-iot.xyz/categories/Prometheus/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://www.blog.sun-iot.xyz/categories/ELK/Logstash/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2793,13 +2807,6 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/categories/Zookeeper/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2897,20 +2904,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Kubernetes/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Kubesphere/</loc>
-    <lastmod>2020-12-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/categories/Linux/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
@@ -2933,6 +2926,20 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/categories/Ubutun/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/categories/Kubernetes/</loc>
+    <lastmod>2020-12-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/categories/Kubesphere/</loc>
     <lastmod>2020-12-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
