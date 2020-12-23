@@ -6,7 +6,7 @@
   <link href="http://www.blog.sun-iot.xyz/atom.xml" rel="self"/>
   
   <link href="http://www.blog.sun-iot.xyz/"/>
-  <updated>2020-12-23T07:35:46.000Z</updated>
+  <updated>2020-12-23T09:29:49.000Z</updated>
   <id>http://www.blog.sun-iot.xyz/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【源码阅读】Alertmanager源码分析-4-Kafka支持</title>
+    <link href="http://www.blog.sun-iot.xyz/posts/94b63734"/>
+    <id>http://www.blog.sun-iot.xyz/posts/94b63734</id>
+    <published>2020-12-23T09:29:49.000Z</published>
+    <updated>2020-12-23T09:29:49.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Alertmanager-源码分析（4）Kafka支持"><a href="#Alertmanager-源码分析（4）Kafka支持" class="headerlink" title="Alertmanager 源码分析（4）Kafka支持"></a>Alertmanager 源码分析（4）Kafka支持</h1><p>前面我们的源码一直走到了<code>notify.go</code> 这个文件里面，但是这里面具体怎么实现的？我并不是很关心。我是带着任务来的。增加 <code>Kafka</code> 支持。 改造 <code>Alertmanager</code> 的消息通知，我们需要知道这几个文件：</p><ul><li><code>notify/notify,go</code> 这里面是 方法的接口</li><li><code>config/config.go</code> 这里面是 <code>alertmanager.yml </code>配置文件序列化</li><li><code>config/notifiers.go</code> 这里面是 告警通知方式的配置的生成</li></ul><p>我们在<code>notify</code> 目录下，找到了 <code>email</code> , <code>webhook</code>等通知方式的源码，我们简单点，根据<code>webhook</code> 来进行<code>Kafka</code> 的源码支持。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;Alertmanager-源码分析（4）Kafka支持&quot;&gt;&lt;a href=&quot;#Alertmanager-源码分析（4）Kafka支持&quot; class=&quot;headerlink&quot; title=&quot;Alertmanager 源码分析（4）Kafka支持&quot;&gt;&lt;/a&gt;Alert</summary>
+      
+    
+    
+    
+    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
+    
+    
+    <category term="Alertmanager" scheme="http://www.blog.sun-iot.xyz/tags/Alertmanager/"/>
+    
+  </entry>
   
   <entry>
     <title>【源码阅读】Alertmanager源码分析(3) Dispatcher</title>
@@ -460,31 +484,6 @@
       
     <summary type="html">&lt;p&gt;生产环境下常用的启动命令 &lt;/p&gt;
 &lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;</summary>
-      
-    
-    
-    
-    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/categories/Prometheus/"/>
-    
-    
-    <category term="Prometheus" scheme="http://www.blog.sun-iot.xyz/tags/Prometheus/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【监控】Prometheus采集方式PushGateway</title>
-    <link href="http://www.blog.sun-iot.xyz/posts/f13926ae"/>
-    <id>http://www.blog.sun-iot.xyz/posts/f13926ae</id>
-    <published>2020-09-30T03:53:17.000Z</published>
-    <updated>2020-09-30T03:53:17.000Z</updated>
-    
-    <content type="html"><![CDATA[<p><code>pushgateway</code> 是另一种采用被动推送的方式(而不是 <code>exporter</code><br>主动获取)获取监控数据的 <code>prometheus</code> 插件；</p><p>它是可以单独运行在任何节点上的插件(并不一定要在被监控客户端)，然后通过用户自定义开发脚本 把需要监控的数据发送给<code>pushgateway</code>，然后 <code>pushgateway</code> 再把数据推送给 <code>prometheus server</code>；</p><h1 id="安装运行"><a href="#安装运行" class="headerlink" title="安装运行"></a>安装运行</h1><p><code>pushgateway</code> 跟 <code>prometheus</code> 和 <code>exporter</code> 一样，下载，解压，直接运行；</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;data&#x2F;pushgateway&#x2F;pushgateway</span><br><span class="line"></span><br><span class="line">&#x2F;data&#x2F;pushgateway&#x2F;pushgateway --web.listen-address 0.0.0.0:9092</span><br></pre></td></tr></table></figure><h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>关于 <code>pushgateway</code> 的配置 主要指的是在 <code>prometheus sever</code> 端的配置</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- job_name: &#39;pushgateway&#39;</span><br><span class="line">  static_configs:</span><br><span class="line">    - targets: [&#39;localhost:9091&#39;, &#39;localhost:9092&#39;]</span><br></pre></td></tr></table></figure><p>在 <code>prometheus.yml</code> 配置文件中，单独定义一个 <code>job</code> 然后 <code>target</code> 指向到 <code>pushgateway</code> 运行所在的机器名和 <code>pushgateway</code> 运行的端口即可</p><h1 id="自定义脚本"><a href="#自定义脚本" class="headerlink" title="自定义脚本"></a>自定义脚本</h1><p>示例，使用 <code>shell</code> 编写的 <code>pushgateway</code> 脚本，用于抓取 <code>TCP waiting_connection</code> 瞬时数量</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line"></span><br><span class="line">instance_name&#x3D;&#96;hostname -f | cut -d&#39;.&#39; -f1&#96; #本机机器名变量 用于之后的标签</span><br><span class="line"></span><br><span class="line">if [ $instance_name &#x3D;&#x3D; &quot;localhost&quot; ];then # 要求机器名 不能是 localhost 不然标签就没有区分了</span><br><span class="line">  echo &quot;Must FQDN hostname&quot; </span><br><span class="line">  exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line"># For waitting connections</span><br><span class="line">label&#x3D;&quot;count_netstat_wait_connections&quot; # 定一个新的 key</span><br><span class="line"></span><br><span class="line">count_netstat_wait_connections&#x3D;&#96;netstat -an | grep -i wait | wc -l&#96; #定义一个新的数值 netstat中 wait 的数量</span><br><span class="line"></span><br><span class="line">echo &quot;$label : $count_netstat_wait_connections&quot;</span><br><span class="line"></span><br><span class="line">echo &quot;$label $count_netstat_wait_connections&quot; | curl --data-binary @- http:&#x2F;&#x2F;prometheus.server.com:9091&#x2F;metrics&#x2F;job&#x2F; pushgateway1&#x2F;instance&#x2F;$instance_name</span><br></pre></td></tr></table></figure><p>最后将脚本结合 <code>crontab</code> 来执行；</p><blockquote><p>crontab 默认只能最短一分钟的间隔，如果希望小于一分钟的间隔 15s，使用如下的方法<br>sleep 10<br>sleep 20</p></blockquote><h1 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h1><p><strong>优点：</strong></p><p><code>pushgateway</code> 这种自定义的 采集方式 非常的快速 而且极其灵活 几乎不收到任何约束</p><p><strong>缺点：</strong></p><ol><li><code>pushgateway</code> 会形成一个单点瓶颈，假如好多个脚本同时发送给 一个 <code>pushgateway</code> 的进程 如果这个进程没了，那么监控数据也就没了</li><li><code>pushgateway</code> 并不能对发送过来的 脚本采集数据 进行更智能的判断 假如脚本中间采集出问题了，那么有问题的数据 <code>pushgateway</code> 一样照单全收 发送给 <code>prometheus</code></li></ol>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;&lt;code&gt;pushgateway&lt;/code&gt; 是另一种采用被动推送的方式(而不是 &lt;code&gt;exporter&lt;/code&gt;&lt;br&gt;主动获取)获取监控数据的 &lt;code&gt;prometheus&lt;/code&gt; 插件；&lt;/p&gt;
-&lt;p&gt;它是可以单独运行在任何节点上的插件(并不一</summary>
       
     
     
