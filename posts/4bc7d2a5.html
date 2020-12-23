@@ -1,0 +1,348 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'【源码阅读】InfluxDB源码编译-官方说明' | 南风意未起</title><meta name="keywords" content="InfluxDB"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="InfluxDB 官方提供的编译说明">
+<meta property="og:type" content="article">
+<meta property="og:title" content="&#39;【源码阅读】InfluxDB源码编译-官方说明&#39;">
+<meta property="og:url" content="https://sun-iot.gitee.io/posts/4bc7d2a5">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:description" content="InfluxDB 官方提供的编译说明">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cn.bing.com/th?id=OHR.OysterMushroom_ZH-CN6265453153_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp">
+<meta property="article:published_time" content="2020-09-02T09:38:55.000Z">
+<meta property="article:modified_time" content="2020-09-02T09:38:55.000Z">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="InfluxDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cn.bing.com/th?id=OHR.OysterMushroom_ZH-CN6265453153_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/posts/4bc7d2a5"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2020-09-02 17:38:55'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cn.bing.com/th?id=OHR.OysterMushroom_ZH-CN6265453153_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">'【源码阅读】InfluxDB源码编译-官方说明'</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-09-02T09:38:55.000Z" title="发表于 2020-09-02 17:38:55">2020-09-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-09-02T09:38:55.000Z" title="更新于 2020-09-02 17:38:55">2020-09-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/InfluxDB/">InfluxDB</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/4bc7d2a5#post-comment"><span class="gitalk-" id="card-toc"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>InfluxDB 官方提供的编译说明 </p>
+<a id="more"></a>
+
+<h1 id="Contributing-to-InfluxDB-v2"><a href="#Contributing-to-InfluxDB-v2" class="headerlink" title="Contributing to InfluxDB v2"></a>Contributing to InfluxDB v2</h1><h2 id="Bug-reports"><a href="#Bug-reports" class="headerlink" title="Bug reports"></a>Bug reports</h2><p>Before you file an issue, please search existing issues in case it has already been filed, or perhaps even fixed.<br>If you file an issue, please include the following.</p>
+<ul>
+<li>Full details of your operating system (or distribution) e.g. <code>64bit Ubuntu 18.04</code>.</li>
+<li>The version of InfluxDB you are running</li>
+<li>Whether you installed it using a pre-built package, or built it from source.</li>
+<li>Clear steps to reproduce the issue described, if at all possible.</li>
+</ul>
+<p>The easier it is for us to reproduce the problem, the easier it is for us to fix it.<br>If you have never written a bug report before, or if you want to brush up on your bug reporting skills, we recommend reading <a target="_blank" rel="noopener" href="http://www.chiark.greenend.org.uk/~sgtatham/bugs.html">Simon Tatham’s essay “How to Report Bugs Effectively.”</a></p>
+<p>Ideally, test cases would be in the form of <code>curl</code> commands.<br>For example:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># write data</span></span><br><span class="line">curl -XPOST <span class="string">&quot;http://localhost:9999/api/v2/write?org=YOUR_ORG&amp;bucket=YOUR_BUCKET&amp;precision=s&quot;</span> \</span><br><span class="line">  --header <span class="string">&quot;Authorization: Token YOURAUTHTOKEN&quot;</span> \</span><br><span class="line">  --data-raw <span class="string">&quot;mem,host=host1 used_percent=23.43234543 1556896326&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># query data</span></span><br><span class="line"><span class="comment"># Bug: expected it to return no data, but data comes back.</span></span><br><span class="line">curl http://localhost:9999/api/v2/query?org=my-org -XPOST -sS \</span><br><span class="line">  -H <span class="string">&#x27;Authorization: Token YOURAUTHTOKEN&#x27;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Accept: application/csv&#x27;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-type: application/vnd.flux&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;from(bucket:&quot;example-bucket&quot;)</span></span><br><span class="line"><span class="string">    |&gt; range(start:-1000h)</span></span><br><span class="line"><span class="string">    |&gt; group(columns:[&quot;_measurement&quot;], mode:&quot;by&quot;)</span></span><br><span class="line"><span class="string">    |&gt; sum()&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>Test cases with <code>influx</code> commands are also helpful.<br>For example:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># write data</span><br><span class="line">influx write -o YOUR_ORG -b YOUR_BUCKET -p s -t YOURAUTHTOKEN \</span><br><span class="line">  &quot;mem,host&#x3D;host1 used_percent&#x3D;23.43234543 1556896326&quot;</span><br><span class="line"></span><br><span class="line"># query data</span><br><span class="line"># Bug: expected it to return no data, but data comes back.</span><br><span class="line">influx query -o YOUR_ORG -t YOURAUTHTOKEN &#39;from(bucket:&quot;example-bucket&quot;)</span><br><span class="line">  |&gt; range(start:-1000h)</span><br><span class="line">  |&gt; group(columns:[&quot;_measurement&quot;], mode:&quot;by&quot;)</span><br><span class="line">  |&gt; sum()&#39;</span><br></pre></td></tr></table></figure>
+
+<p>If you don’t include a clear test case like this it will be very difficult for us to investigate your issue.<br>If writing the data is too difficult, please zip up your data directory and include a link to it in your bug report.</p>
+<p>Please note that issues are <em>not the place to file general support requests</em> such as “how do I use collectd with InfluxDB?”<br>Questions of this nature should be sent to the <a target="_blank" rel="noopener" href="https://community.influxdata.com/">InfluxData Community</a>, not filed as issues.</p>
+<h2 id="Feature-requests"><a href="#Feature-requests" class="headerlink" title="Feature requests"></a>Feature requests</h2><p>We really like to receive feature requests as it helps us prioritize our work.<br>Please be clear about your requirements and goals, help us to understand what you would like to see added to InfluxD with examples and the reasons why it is important to you.<br>If you find your feature request already exists as a Github issue please indicate your support for that feature by using the “thumbs up” reaction.</p>
+<h2 id="Contributing-to-the-source-code"><a href="#Contributing-to-the-source-code" class="headerlink" title="Contributing to the source code"></a>Contributing to the source code</h2><p>InfluxDB requires Go 1.13 and uses Go modules.</p>
+<p>You should read our <a target="_blank" rel="noopener" href="https://github.com/influxdata/influxdb/blob/master/DEVELOPMENT.md">coding guide</a>, to understand better how to write code for InfluxDB.</p>
+<h2 id="Submitting-a-pull-request"><a href="#Submitting-a-pull-request" class="headerlink" title="Submitting a pull request"></a>Submitting a pull request</h2><p>To submit a pull request you should fork the InfluxDB repository, and make your change on a feature branch of your fork.<br>Then generate a pull request from your branch against <em>master</em> of the InfluxDB repository.<br>Include in your pull request details of your change – the why <em>and</em> the how – as well as the testing your performed.<br>Also, be sure to run the test suite with your change in place.<br>Changes that cause tests to fail cannot be merged.</p>
+<p>There will usually be some back and forth as we finalize the change, but once that completes it may be merged.</p>
+<p>To assist in review for the PR, please add the following to your pull request comment:</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> [ ] CHANGELOG.md updated</span><br><span class="line"><span class="bullet">-</span> [ ] Rebased/mergable</span><br><span class="line"><span class="bullet">-</span> [ ] Tests pass</span><br><span class="line"><span class="bullet">-</span> [<span class="string"> </span>] Sign [<span class="string">CLA</span>](<span class="link">https://influxdata.com/community/cla/</span>) (if not already signed)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Security-Vulnerability-Reporting"><a href="#Security-Vulnerability-Reporting" class="headerlink" title="Security Vulnerability Reporting"></a>Security Vulnerability Reporting</h2><p>InfluxData takes security and our users’ trust very seriously.<br>If you believe you have found a security issue in any of our open source projects, please responsibly disclose it by contacting <a href="mailto:&#115;&#x65;&#99;&#x75;&#114;&#105;&#x74;&#121;&#64;&#105;&#110;&#102;&#x6c;&#x75;&#120;&#x64;&#x61;&#116;&#97;&#x2e;&#99;&#x6f;&#109;">&#115;&#x65;&#99;&#x75;&#114;&#105;&#x74;&#121;&#64;&#105;&#110;&#102;&#x6c;&#x75;&#120;&#x64;&#x61;&#116;&#97;&#x2e;&#99;&#x6f;&#109;</a>.<br>More details about security vulnerability reporting, including our GPG key, <a target="_blank" rel="noopener" href="https://www.influxdata.com/how-to-report-security-vulnerabilities/">can be found here</a>.</p>
+<h2 id="Signing-the-CLA"><a href="#Signing-the-CLA" class="headerlink" title="Signing the CLA"></a>Signing the CLA</h2><p>If you are going to be contributing back to InfluxDB please take a second to sign our CLA, which can be found <a target="_blank" rel="noopener" href="https://influxdata.com/community/cla/">on our website</a>.</p>
+<h2 id="Installing-Go"><a href="#Installing-Go" class="headerlink" title="Installing Go"></a>Installing Go</h2><p>InfluxDB requires Go 1.13.</p>
+<p>At InfluxData we find <code>gvm</code>, a Go version manager, useful for installing Go.<br>For instructions on how to install it see <a target="_blank" rel="noopener" href="https://github.com/moovweb/gvm">the gvm page on github</a>.</p>
+<p>After installing gvm you can install and set the default go version by running the following:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ gvm install go1.13</span><br><span class="line">$ gvm use go1.13 --default</span><br></pre></td></tr></table></figure>
+
+<h2 id="Revision-Control-Systems"><a href="#Revision-Control-Systems" class="headerlink" title="Revision Control Systems"></a>Revision Control Systems</h2><p>Go has the ability to import remote packages via revision control systems with the <code>go get</code> command.<br>To ensure that you can retrieve any remote package, be sure to install the following rcs software to your system.<br>Currently the project only depends on <code>git</code> and <code>bzr</code>.</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://git-scm.com/book/en/Getting-Started-Installing-Git">Install Git</a></li>
+<li><a target="_blank" rel="noopener" href="http://doc.bazaar.canonical.com/latest/en/user-guide/installing_bazaar.html">Install Bazaar</a></li>
+</ul>
+<h2 id="Getting-amp-Building-From-Source"><a href="#Getting-amp-Building-From-Source" class="headerlink" title="Getting &amp; Building From Source"></a>Getting &amp; Building From Source</h2><p>Since we depend on Go modules and use standard Go tooling, you can simply check out and build InfluxDB at your preferred location on your filesystem.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> git@github.com:influxdata/influxdb.git</span><br></pre></td></tr></table></figure>
+
+<h2 id="Building-Testing-and-Installing"><a href="#Building-Testing-and-Installing" class="headerlink" title="Building, Testing, and Installing"></a>Building, Testing, and Installing</h2><p>InfluxDB uses the standard Go tooling so the <code>build</code>, <code>install</code>, and <code>test</code> subcommands work as expected.<br>In the root of the InfluxDB git repository, you can simply run the following commands:</p>
+<h3 id="Building"><a href="#Building" class="headerlink" title="Building"></a>Building</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go build ./...</span><br></pre></td></tr></table></figure>
+
+<h3 id="Installing"><a href="#Installing" class="headerlink" title="Installing"></a>Installing</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go install ./...</span><br></pre></td></tr></table></figure>
+
+<h3 id="Testing"><a href="#Testing" class="headerlink" title="Testing"></a>Testing</h3><p>This project is built from various languages. To run test for all langauges and components use:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make <span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<p>To run tests for just the Javascript component use:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make test-js</span><br></pre></td></tr></table></figure>
+
+<p>To run tests for just the Go/Rust components use:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make test-go</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Generated-Google-Protobuf-code"><a href="#Generated-Google-Protobuf-code" class="headerlink" title="Generated Google Protobuf code"></a>Generated Google Protobuf code</h2><p>Most changes to the source do not require that the generated protocol buffer code be changed.<br>But if you need to modify the protocol buffer code, you’ll first need to install the protocol buffers toolchain.</p>
+<p>First install the <a target="_blank" rel="noopener" href="https://developers.google.com/protocol-buffers/">protocol buffer compiler</a> 2.6.1 or later for your OS:</p>
+<p>Then install the go plugins:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ go get github.com/gogo/protobuf/proto</span><br><span class="line">$ go get github.com/gogo/protobuf/protoc-gen-gogo</span><br><span class="line">$ go get github.com/gogo/protobuf/gogoproto</span><br></pre></td></tr></table></figure>
+
+<p>Finally run, <code>go generate</code> after updating any <code>*.proto</code> file:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go generate ./...</span><br></pre></td></tr></table></figure>
+<p><strong>Troubleshooting</strong></p>
+<p>If generating the protobuf code is failing for you, check each of the following:</p>
+<ul>
+<li>Ensure the protobuf library can be found. Make sure that <code>LD_LIBRARY_PATH</code> includes the directory in which the library <code>libprotoc.so</code> has been installed.</li>
+<li>Ensure the command <code>protoc-gen-gogo</code>, found in <code>GOPATH/bin</code>, is on your path. This can be done by adding <code>GOPATH/bin</code> to <code>PATH</code>.</li>
+</ul>
+<h2 id="Generated-Go-Templates"><a href="#Generated-Go-Templates" class="headerlink" title="Generated Go Templates"></a>Generated Go Templates</h2><p>The query engine requires optimized data structures for each data type so instead of writing each implementation several times we use templates.<br><em>Do not change code that ends in a <code>.gen.go</code> extension!</em><br>Instead you must edit the <code>.gen.go.tmpl</code> file that was used to generate it.</p>
+<p>Once you’ve edited the template file, you’ll need the <a target="_blank" rel="noopener" href="https://github.com/benbjohnson/tmpl"><code>tmpl</code></a> utility to generate the code:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go get github.com/benbjohnson/tmpl</span><br></pre></td></tr></table></figure>
+
+<p>Then you can regenerate all templates in the project:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go generate ./...</span><br></pre></td></tr></table></figure>
+
+<h2 id="Profiling"><a href="#Profiling" class="headerlink" title="Profiling"></a>Profiling</h2><p>When troubleshooting problems with CPU or memory the Go toolchain can be helpful.<br>You can start InfluxDB with CPU and memory profiling turned on.<br>For example:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># start influx with profiling</span></span><br><span class="line"></span><br><span class="line">$ ./influxd -cpuprofile influxdcpu.prof -memprof influxdmem.prof</span><br><span class="line"></span><br><span class="line"><span class="comment"># run queries, writes, whatever you&#x27;re testing</span></span><br><span class="line"><span class="comment"># Quit out of influxd and influxd.prof will then be written.</span></span><br><span class="line"><span class="comment"># open up pprof to examine the profiling data.</span></span><br><span class="line"></span><br><span class="line">$ go tool pprof ./influxd influxd.prof</span><br><span class="line"></span><br><span class="line"><span class="comment"># once inside run &quot;web&quot;, opens up browser with the CPU graph</span></span><br><span class="line"><span class="comment"># can also run &quot;web &lt;function name&gt;&quot; to zoom in. Or &quot;list &lt;function name&gt;&quot; to see specific lines</span></span><br></pre></td></tr></table></figure>
+<p>Note that when you pass the binary to <code>go tool pprof</code> <em>you must specify the path to the binary</em>.</p>
+<p>If you are profiling benchmarks built with the <code>testing</code> package, you may wish<br>to use the <a href="github.com/pkg/profile"><code>github.com/pkg/profile</code></a> package to limit<br>the code being profiled:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkSomething</span><span class="params">(b *testing.B)</span></span> &#123;</span><br><span class="line">  <span class="comment">// do something intensive like fill database with data...</span></span><br><span class="line">  <span class="keyword">defer</span> profile.Start(profile.ProfilePath(<span class="string">&quot;/tmp&quot;</span>), profile.MemProfile).Stop()</span><br><span class="line">  <span class="comment">// do something that you want to profile...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">开发实习生</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://sun-iot.gitee.io/posts/4bc7d2a5">https://sun-iot.gitee.io/posts/4bc7d2a5</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://sun-iot.gitee.io" target="_blank">南风意未起</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/InfluxDB/">InfluxDB</a></div><div class="post_share"><div class="social-share" data-image="https://cn.bing.com/th?id=OHR.OysterMushroom_ZH-CN6265453153_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/4b20d86a"><img class="prev-cover" data-lazy-src="https://cn.bing.com/th?id=OHR.FinancialTowers_ZH-CN6494148642_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">【Hadoop】从零开始学大数据-1</div></div></a></div><div class="next-post pull-right"><a href="/posts/f55d5d0d"><img class="next-cover" data-lazy-src="https://cn.bing.com/th?id=OHR.SmithRock_ZH-CN6383276214_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">【源码阅读】InfluxDB源码编译</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/f55d5d0d.html" title="【源码阅读】InfluxDB源码编译"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.SmithRock_ZH-CN6383276214_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-02</div><div class="title">【源码阅读】InfluxDB源码编译</div></div></a></div><div><a href="/posts/b80e5ef6.html" title="【源码阅读】InfluxDB的Read过程"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.LongIsland_ZH-CN7089248815_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-08-05</div><div class="title">【源码阅读】InfluxDB的Read过程</div></div></a></div><div><a href="/posts/4081c04.html" title="【源码阅读】InfluxDB的启动过程"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.MonteCristo_ZH-CN4343811693_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-08-05</div><div class="title">【源码阅读】InfluxDB的启动过程</div></div></a></div><div><a href="/posts/181a4317.html" title="【源码阅读】InfluxDB的Write过程"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.BeaverDam_ZH-CN6855160492_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-08-05</div><div class="title">【源码阅读】InfluxDB的Write过程</div></div></a></div><div><a href="/posts/2755494b.html" title="InfluxDB集群化方案之influx-proxy的说明"><img class="cover" data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-12-10</div><div class="title">InfluxDB集群化方案之influx-proxy的说明</div></div></a></div><div><a href="/posts/51eb7ca.html" title="Influx-Proxy部署流程以及风险点分析"><img class="cover" data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-12-10</div><div class="title">Influx-Proxy部署流程以及风险点分析</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Contributing-to-InfluxDB-v2"><span class="toc-text">Contributing to InfluxDB v2</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Bug-reports"><span class="toc-text">Bug reports</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Feature-requests"><span class="toc-text">Feature requests</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Contributing-to-the-source-code"><span class="toc-text">Contributing to the source code</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Submitting-a-pull-request"><span class="toc-text">Submitting a pull request</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Security-Vulnerability-Reporting"><span class="toc-text">Security Vulnerability Reporting</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Signing-the-CLA"><span class="toc-text">Signing the CLA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Installing-Go"><span class="toc-text">Installing Go</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Revision-Control-Systems"><span class="toc-text">Revision Control Systems</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Getting-amp-Building-From-Source"><span class="toc-text">Getting &amp; Building From Source</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Building-Testing-and-Installing"><span class="toc-text">Building, Testing, and Installing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Building"><span class="toc-text">Building</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Installing"><span class="toc-text">Installing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Testing"><span class="toc-text">Testing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Generated-Google-Protobuf-code"><span class="toc-text">Generated Google Protobuf code</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Generated-Go-Templates"><span class="toc-text">Generated Go Templates</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Profiling"><span class="toc-text">Profiling</span></a></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '44a0c3d7bcb18a2f70d9',
+      clientSecret: '5c734f6dde56cf430ba76c5fbd383ec552ab25a6',
+      repo: 'hexo-blog-comments',
+      owner: 'sun-iot',
+      admin: ['sun-iot'],
+      id: '9b3aa70734aeb84fb34272c544e42c25',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

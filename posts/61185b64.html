@@ -1,0 +1,788 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>influx-proxy无侵入式InfluxDB高可用方案测试 | 南风意未起</title><meta name="keywords" content="InfluxDB"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="influx-proxy无侵入式InfluxDB高可用方案测试背景描述目前因公司微服务发展需要，构建基于 Influxdb 的监控体系。由于 Influxdb 官方提供的 集群模式为闭源收费版本，不足以满足前期的公司监控体系的发展需要。因此我们寻找到基于官方提供的 Influx-Play 的代理服务的二次开发版本 Influx-Proxy。Influx-Proxy提供了以下功能: 基于一致性 Ha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="influx-proxy无侵入式InfluxDB高可用方案测试">
+<meta property="og:url" content="https://sun-iot.gitee.io/posts/61185b64">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:description" content="influx-proxy无侵入式InfluxDB高可用方案测试背景描述目前因公司微服务发展需要，构建基于 Influxdb 的监控体系。由于 Influxdb 官方提供的 集群模式为闭源收费版本，不足以满足前期的公司监控体系的发展需要。因此我们寻找到基于官方提供的 Influx-Play 的代理服务的二次开发版本 Influx-Proxy。Influx-Proxy提供了以下功能: 基于一致性 Ha">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png">
+<meta property="article:published_time" content="2020-12-10T01:01:49.000Z">
+<meta property="article:modified_time" content="2020-12-10T01:01:49.000Z">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="InfluxDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/posts/61185b64"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2020-12-10 09:01:49'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">influx-proxy无侵入式InfluxDB高可用方案测试</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-12-10T01:01:49.000Z" title="更新于 2020-12-10 09:01:49">2020-12-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/InfluxDB/">InfluxDB</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>24分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/61185b64#post-comment"><span class="gitalk-" id="card-toc"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="influx-proxy无侵入式InfluxDB高可用方案测试"><a href="#influx-proxy无侵入式InfluxDB高可用方案测试" class="headerlink" title="influx-proxy无侵入式InfluxDB高可用方案测试"></a>influx-proxy无侵入式InfluxDB高可用方案测试</h1><h2 id="背景描述"><a href="#背景描述" class="headerlink" title="背景描述"></a>背景描述</h2><p>目前因公司微服务发展需要，构建基于 Influxdb 的监控体系。由于 Influxdb 官方提供的 集群模式为闭源收费版本，不足以满足前期的公司监控体系的发展需要。因此我们寻找到基于官方提供的 Influx-Play 的代理服务的二次开发版本 Influx-Proxy。Influx-Proxy提供了以下功能: 基于一致性 Hash 的自动分片，多环多写实现完成数据备份，数据重平衡机制，故障恢复机制以及数据同步的实现，满足我们目前的使用需求: 无侵入式Influxdb集群化，数据备份，故障恢复。</p>
+<p>但是我们在对 Influx-Proxy 进行代码审计的过程中发现几个问题: </p>
+<ol>
+<li>在根据 query 对 measurement 的解析过程中我们发现，获取到的 measurement 名 并不是 我们的 真是的表名，而是 我们 Influxdb 中针对 当前 库 设置的 Retention Policies 的名。这将导致我们所有的分片查找最后都在一个 Influxdb 实例上。</li>
+<li>我们发现了多个地方的 Data Race。导致 Data Race 的地方主要有: ① 代码中对于某个实例的健康检查状态，后台定时任务会一直检查实例的活性，但有其他任务在同时读取实例的活性，两边的操作均未加锁，导致 data race，加锁字段为: HttpBackend 结构体中的 Active ; ② Influxdb 实例结构体中 对于 是否在进行 重写操作时， 对 rewriteRuning 进行判断，但同样在 取值以及赋值时未加锁，导致 data race; ③ 在 CacheBuffer 结构体中，用于存储 DB 缓冲区 行数的字段 Counter, 未加锁; ④ 在 FlushBuffer 中，针对: 缓冲区的 清空 未执行锁操作导致 data race.</li>
+</ol>
+<p>我们针对上述情况进行了 修复，并将修复前与修复后的代码进行了压测测试。在压测测试中，我们使用了 双环双机器 进行压测实验。</p>
+<p>测试说明:</p>
+<ol>
+<li>压测中的一律使用 机器 构建 <code>Influxdb </code>二进制</li>
+<li>除 压测 之外，所有的测试均使用 <code>Docker </code>部署 多实例 <code>Influxdb </code>测试方案。</li>
+</ol>
+<h2 id="测试准备"><a href="#测试准备" class="headerlink" title="测试准备"></a>测试准备</h2><h3 id="压测准备"><a href="#压测准备" class="headerlink" title="压测准备"></a>压测准备</h3><h4 id="机器准备"><a href="#机器准备" class="headerlink" title="机器准备"></a>机器准备</h4><table>
+<thead>
+<tr>
+<th>机器名</th>
+<th>操作系统版本</th>
+<th>CPU</th>
+<th>内存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>192.168.2.80</td>
+<td>Ubuntu 18.04.5 LTS</td>
+<td>x86_64 ， 8 核</td>
+<td>16 Gi</td>
+</tr>
+<tr>
+<td>192.168.2.97</td>
+<td>Ubuntu 18.04.5 LTS</td>
+<td>x86_64 ，4 核</td>
+<td>8 Gi</td>
+</tr>
+</tbody></table>
+<h4 id="实例准备"><a href="#实例准备" class="headerlink" title="实例准备"></a>实例准备</h4><p>Influxdb 版本: 1.8.0</p>
+<p>部署方式: 二进制部署</p>
+<p>操作数据库: msp</p>
+<p>开放数据端口: 8086</p>
+<h4 id="数据源准备"><a href="#数据源准备" class="headerlink" title="数据源准备"></a>数据源准备</h4><ul>
+<li><p>Influx-Proxy 修改前的源程序： 位于 /home/taosheng/influx-proxy-gitsrc</p>
+</li>
+<li><p>Influx-Proxy 修改后的源程序： 位于 /home/taosheng/influx-proxy-sunyang</p>
+</li>
+<li><p>msp_backend 进行压测的数据源提供，增加 四张表随机性的写入</p>
+</li>
+<li><p>准备 两台 Influxdb 实例，开放 8086 口， 并创建好 msp 库</p>
+</li>
+</ul>
+<h3 id="其他测试"><a href="#其他测试" class="headerlink" title="其他测试"></a>其他测试</h3><h4 id="机器准备-1"><a href="#机器准备-1" class="headerlink" title="机器准备"></a>机器准备</h4><table>
+<thead>
+<tr>
+<th>机器名</th>
+<th>操作系统版本</th>
+<th>Docker版本</th>
+<th>Influxdb镜像</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10.20.1.100</td>
+<td>Ubuntu 18.04.5 LTS</td>
+<td>19.03.12</td>
+<td>harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine</td>
+</tr>
+<tr>
+<td>10.20.4.132</td>
+<td>Ubuntu 18.04.5 LTS</td>
+<td>19.03.12</td>
+<td>harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine</td>
+</tr>
+</tbody></table>
+<p>实例准备，默认数据库: <strong>msp</strong></p>
+<table>
+<thead>
+<tr>
+<th>实例名</th>
+<th>部署方式</th>
+<th>实例镜像</th>
+<th>所在机器</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>inlfux-1</td>
+<td>容器部署</td>
+<td>harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine</td>
+<td>[100  132]</td>
+</tr>
+<tr>
+<td>inlfux-2</td>
+<td>容器部署</td>
+<td>harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine</td>
+<td>[100  132]</td>
+</tr>
+<tr>
+<td>inlfux-3</td>
+<td>容器部署</td>
+<td>harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine</td>
+<td>[100  132]</td>
+</tr>
+</tbody></table>
+<h4 id="数据准备"><a href="#数据准备" class="headerlink" title="数据准备"></a>数据准备</h4><ul>
+<li><p>msp_backend 进行压测的数据源提供，增加 四张表随机性的写入</p>
+</li>
+<li><p>Influx-Proxy 修改前的源程序： 位于 /home/taosheng/influx-proxy-gitsrc</p>
+</li>
+<li><p>Influx-Proxy 修改后的源程序： 位于 /home/taosheng/influx-proxy-sunyang</p>
+</li>
+</ul>
+<h2 id="测试过程"><a href="#测试过程" class="headerlink" title="测试过程"></a>测试过程</h2><h3 id="压测结果"><a href="#压测结果" class="headerlink" title="压测结果"></a>压测结果</h3><h4 id="修改前"><a href="#修改前" class="headerlink" title="修改前"></a>修改前</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">Concurrency Level:      20</span><br><span class="line">Time taken <span class="keyword">for</span> tests:   2.887 seconds</span><br><span class="line">Complete requests:      100000</span><br><span class="line">Failed requests:        0</span><br><span class="line">Total transferred:      7500000 bytes</span><br><span class="line">HTML transferred:       0 bytes</span><br><span class="line">Requests per second:    34632.79 [<span class="comment">#/sec] (mean)</span></span><br><span class="line">Time per request:       0.577 [ms] (mean)</span><br><span class="line">Time per request:       0.029 [ms] (mean, across all concurrent requests)</span><br><span class="line">Transfer rate:          2536.58 [Kbytes/sec] received</span><br><span class="line"></span><br><span class="line">Connection Times (ms)</span><br><span class="line">              min  mean[+/-sd] median   max</span><br><span class="line">Connect:        0    0   0.1      0       5</span><br><span class="line">Processing:     0    0   0.2      0      17</span><br><span class="line">Waiting:        0    0   0.2      0      11</span><br><span class="line">Total:          0    1   0.2      1      17</span><br><span class="line"></span><br><span class="line">Percentage of the requests served within a certain time (ms)</span><br><span class="line">  50%      1</span><br><span class="line">  66%      1</span><br><span class="line">  75%      1</span><br><span class="line">  80%      1</span><br><span class="line">  90%      1</span><br><span class="line">  95%      1</span><br><span class="line">  98%      1</span><br><span class="line">  99%      1</span><br><span class="line"> 100%     17 (longest request)</span><br></pre></td></tr></table></figure>
+
+<p>结果:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&gt; select sum(count) from test_udp_proxy_4;</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    33249</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3;</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    597</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_2;</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    35010</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    31144</span><br></pre></td></tr></table></figure>
+
+<p>执行 10万 请求，当前 Influxdb 实例实际写入数据 共计 10 万</p>
+<h4 id="修改后"><a href="#修改后" class="headerlink" title="修改后"></a>修改后</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">Concurrency Level:      20</span><br><span class="line">Time taken <span class="keyword">for</span> tests:   2.776 seconds</span><br><span class="line">Complete requests:      100000</span><br><span class="line">Failed requests:        0</span><br><span class="line">Total transferred:      7500000 bytes</span><br><span class="line">HTML transferred:       0 bytes</span><br><span class="line">Requests per second:    36021.93 [<span class="comment">#/sec] (mean)</span></span><br><span class="line">Time per request:       0.555 [ms] (mean)</span><br><span class="line">Time per request:       0.028 [ms] (mean, across all concurrent requests)</span><br><span class="line">Transfer rate:          2638.32 [Kbytes/sec] received</span><br><span class="line"></span><br><span class="line">Connection Times (ms)</span><br><span class="line">              min  mean[+/-sd] median   max</span><br><span class="line">Connect:        0    0   0.1      0       4</span><br><span class="line">Processing:     0    0   0.3      0      10</span><br><span class="line">Waiting:        0    0   0.3      0      10</span><br><span class="line">Total:          0    1   0.3      1      10</span><br><span class="line"></span><br><span class="line">Percentage of the requests served within a certain time (ms)</span><br><span class="line">  50%      1</span><br><span class="line">  66%      1</span><br><span class="line">  75%      1</span><br><span class="line">  80%      1</span><br><span class="line">  90%      1</span><br><span class="line">  95%      1</span><br><span class="line">  98%      1</span><br><span class="line">  99%      1</span><br><span class="line"> 100%     10 (longest request)</span><br></pre></td></tr></table></figure>
+
+<p>结果:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    7081</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_2;</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    24</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3;</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    35820</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_4;</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    57074</span><br></pre></td></tr></table></figure>
+
+<p>执行 10万 请求，当前 Influxdb 实例实际写入数据 共计 99999 条。</p>
+<h4 id="压测结论"><a href="#压测结论" class="headerlink" title="压测结论"></a>压测结论</h4><ol>
+<li>相比较修改前， 我们在 原来的基础上，修复了 influx-proxy 存在的 DataRace , 数据表获取异常等 BUG，且在性能上并无影响，提高了整个程序的健壮性。</li>
+<li>在不考虑时间精度的影响下，influx-proxy的数据转发能力达到 100%</li>
+</ol>
+<h3 id="重平衡机制"><a href="#重平衡机制" class="headerlink" title="重平衡机制"></a>重平衡机制</h3><p>重平衡的目的：当 <code>influxdb </code>实例无法承载当前数据量时，需要扩充新的 <code>influxdb </code>实例，或者当前所有 <code>influxdb </code>实例硬件资源严重过剩，需要缩减 <code>influxdb </code>实例，则需要进行扩缩容操作：</p>
+<ol>
+<li>为了高可用性，不停机，扩容时我们需要 一个 <code>circle </code>接一个 <code>circle </code>进行操作；</li>
+<li>我们修改 <code>proxy</code>  配置文件</li>
+<li>调用 <code>/rebalance</code> 接口</li>
+</ol>
+<p>我们调用 <code>/rebalance</code> 接口后，我们重平衡的目标 <code>circle</code> 变成 <code>write only</code> 状态，此时不影响 数据的写入，但是无法在进行 查询。直至重平衡完成，当前的 <code>circle</code> 的状态恢复。</p>
+<blockquote>
+<p>扩容完成后，我们需要清理迁移之前的旧数据。参考 API： <code>/cleanup</code></p>
+</blockquote>
+<p><strong>说明</strong></p>
+<ol>
+<li><p>重平衡只针对目标 <code>circle</code>，不影响 其他的 <code>circle</code></p>
+</li>
+<li><p>如果我们进行重平衡时，面对大量数据的时候，执行重平衡操作，迁移性能低下，耗时长，建议方案如下:</p>
+<blockquote>
+<p>使用官方 <code>influx_inspect export -out</code> 导出所有的数据，在使用 <code>influx -import -path</code> ,  导入到 <code>influx-proxy</code> , 此方案效率会高于 <code>rebalance</code> 操作。</p>
+<p>以数据为单位，导出全部数据，如果只需要导出数据库部分 <code>measurements</code> 数据，此方案不妥。</p>
+</blockquote>
+<blockquote>
+<p>使用 <code>influx-tool -dir</code> 工具导出部分 <code>measurements</code>数据，再使用 <code>influx -import -path</code> 导入到<code> influx proxy</code>，此方案效率会高于 <code>rebalance </code>操作.</p>
+<ul>
+<li>支持指定 <code>measurement</code> 列表或范围导出</li>
+<li>支持 <code>-measurements</code> 指定 measurements 列表导出，以英文逗号分隔或者</li>
+<li><code>-range</code> 指定 measurements 起始范围导出，形如 <code>start,end</code> 格式</li>
+<li><code>-float-fields</code> 指定 string 类型的 field 列表，强转为 float 类型</li>
+<li>将同时具有 string 和 float 类型的 field 自动转换为 float 类型</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<h4 id="测试1：扩容"><a href="#测试1：扩容" class="headerlink" title="测试1：扩容"></a>测试1：扩容</h4><p>测试场景:</p>
+<p>在双环双实例下，随着业务场景的增长，环内单实例已不足以满足使用需求，需要对 <code>InfluxDB </code>进行扩容，扩展为双环四实例。</p>
+<p>我们先往 <code>influx-1</code>写入10万+ 的数据：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&gt; show measurements;</span><br><span class="line">name: measurements</span><br><span class="line">name</span><br><span class="line">----</span><br><span class="line">test_udp_proxy_1</span><br><span class="line">test_udp_proxy_2</span><br><span class="line">test_udp_proxy_3</span><br><span class="line">test_udp_proxy_4</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    34953</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_2</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    27721</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    20291</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_4</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    17035</span><br></pre></td></tr></table></figure>
+
+<p>现在，我们针对<code>circle-0</code>来增加一个实例，在<code>proxy.yaml</code> 中增加一台实例节点：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">influxdb-1-2</span></span><br><span class="line">  <span class="attr">url:</span> <span class="string">&#x27;http://10.20.1.100:8087&#x27;</span></span><br><span class="line">  <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">  <span class="attr">password:</span> <span class="string">&#x27;123456&#x27;</span></span><br><span class="line">  <span class="attr">auth_secure:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+<p>重启，<code>influx-proxy</code>，在调用 <code>/rebalance</code> 接口。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2020/12/01 00:40:49.772069 /opt/project/go/src/influx-proxy/backend/config.go:183: circle 0: 2 backends loaded</span><br><span class="line">2020/12/01 00:40:49.772073 /opt/project/go/src/influx-proxy/backend/config.go:183: circle 1: 1 backends loaded</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，在<code>circle-0</code>里面，我们加载了两个 <code>Backend</code>，调用接口。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST <span class="string">&#x27;http://127.0.0.1:80/rebalance?circle_id=0&amp;operation=add&#x27;</span></span><br><span class="line"></span><br><span class="line">response: accepted</span><br></pre></td></tr></table></figure>
+
+<p>说明成功执行了重平衡操作。</p>
+<p>现在，我们需要查询当前的重平衡的状态，去判断是否完成，调用接口：<code>/transfer/stats</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">curl <span class="string">&#x27;http://127.0.0.1:80/transfer/stats?circle_id=0&amp;type=rebalance&amp;pretty=true&#x27;</span></span><br><span class="line"></span><br><span class="line">response:</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;http://10.20.1.100:8086&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;database_total&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;database_done&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;measurement_total&quot;</span>: 4,</span><br><span class="line">        <span class="string">&quot;measurement_done&quot;</span>: 4,</span><br><span class="line">        <span class="string">&quot;transfer_count&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;inplace_count&quot;</span>: 3</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;http://10.20.1.100:8087&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;database_total&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;database_done&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;measurement_total&quot;</span>: 0,</span><br><span class="line">        <span class="string">&quot;measurement_done&quot;</span>: 0,</span><br><span class="line">        <span class="string">&quot;transfer_count&quot;</span>: 0,</span><br><span class="line">        <span class="string">&quot;inplace_count&quot;</span>: 0</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在我们去查我们增加的实例中的 <code>measurement</code>，从上述结果中，我们可以看到的是在 <code>10.20.1.100:8086</code>这个实例里面有一张表进行了 <code>transfer</code> 操作，我们需要去 新的实例里面看一下是否真的存在一张表，且表的数据与原表数据保持一致.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; show measurements;</span><br><span class="line">name: measurements</span><br><span class="line">name</span><br><span class="line">----</span><br><span class="line">test_udp_proxy_1</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    34953</span><br></pre></td></tr></table></figure>
+
+<p>我们在 新的实例中又看到表: <code>test_udp_proxy_1</code>，这在一开始是没有的，而且数据上，与原来是一致的。说明数据并没有丢失。</p>
+<p>我们先来在写入 10万+ 的数据。先看 新增节点里面的表数据:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    34953</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    42056</span><br></pre></td></tr></table></figure>
+
+<p>数据是已经成功写入了。再看<code> influx-1</code> 节点</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&gt; select sum(count) from test_udp_proxy_1</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    34953</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_2</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    51415</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    49447</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_4</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    57082</span><br></pre></td></tr></table></figure>
+
+<p>现在 表 <code>test_udp_proxy_1</code> 的分片数据都写入到了 <code>influx-1</code>，满足我们的要求，再来看我们的数据的丢失情况，我们将 test_udp_proxy_1/2/3/4 表的数据累加起来，结果是正好是 20万，说明我们的数据 100% 写入了。此时，我们的扩容成功。</p>
+<h4 id="测试2：缩容"><a href="#测试2：缩容" class="headerlink" title="测试2：缩容"></a>测试2：缩容</h4><p>扩容我们可以看到是 OK 的，现在我们现在测试一下缩容。</p>
+<p>测试场景:</p>
+<p>由于某些原因，导致公司的 <code>circle-0</code> 中的 <code>influx-1</code> 节点必须要下线了，因此我们需要进行缩容。按照步骤，我们在 扩容后的基础上来进行测试，按照我们的想法，目前有两点疑问:</p>
+<ol>
+<li>在进行缩容时，<code>influx-1</code>节点的数据是否能够完整的无丢失的写入到<code> influx-2</code>节点？</li>
+<li>由于 <code>influx-2</code> 是在 扩容后 添加进来的，里面的数据是否会有影响？</li>
+</ol>
+<p>我们修改<code>proxy.yaml</code>配置文件，去掉 <code>inlfux-1</code>节点，重启 <code>influx-proxy</code>后执行 <code>/rebalance</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2020/12/01 01:11:28.830531 /opt/project/go/src/influx-proxy/backend/config.go:183: circle 0: 1 backends loaded</span><br><span class="line">2020/12/01 01:11:28.830535 /opt/project/go/src/influx-proxy/backend/config.go:183: circle 1: 1 backends loaded</span><br></pre></td></tr></table></figure>
+
+<p>现在开始调用<code>/rebalance</code>接口，执行重平衡操作。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">curl --location --request POST <span class="string">&#x27;http://192.168.48.115:80/rebalance?circle_id=0&amp;operation=rm&#x27;</span> \</span><br><span class="line">--header <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">--data <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;backends&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">            &quot;name&quot;: &quot;influxdb-1-1&quot;,</span></span><br><span class="line"><span class="string">            &quot;url&quot;: &quot;http://127.0.0.1:8086&quot;,</span></span><br><span class="line"><span class="string">            &quot;username&quot;: &quot;root&quot;,</span></span><br><span class="line"><span class="string">            &quot;password&quot;: &quot;123456&quot;,</span></span><br><span class="line"><span class="string">            &quot;auth_secure&quot;: false</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">&#125;&#x27;</span></span><br><span class="line">accepted</span><br></pre></td></tr></table></figure>
+
+<p>开始查询状态:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">curl <span class="string">&#x27;http://127.0.0.1:80/transfer/stats?circle_id=0&amp;type=rebalance&amp;pretty=true&#x27;</span></span><br><span class="line">&#123;</span><br><span class="line">   <span class="string">&quot;http://10.20.1.100:8086&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;database_total&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;database_done&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;measurement_total&quot;</span>: 4,</span><br><span class="line">        <span class="string">&quot;measurement_done&quot;</span>: 4,</span><br><span class="line">        <span class="string">&quot;transfer_count&quot;</span>: 4,</span><br><span class="line">        <span class="string">&quot;inplace_count&quot;</span>: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;http://10.20.1.100:8087&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;database_total&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;database_done&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;measurement_total&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;measurement_done&quot;</span>: 1,</span><br><span class="line">        <span class="string">&quot;transfer_count&quot;</span>: 0,</span><br><span class="line">        <span class="string">&quot;inplace_count&quot;</span>: 1</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，目前在 <code>influx-1</code> 中发生了 <code>transfer</code> 的表数一共有 4 个， 说明了 我们之前 扩容时的那张表也过来了。在数据上会有什么变化，可以再看下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    42056</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_2;</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    51415</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3;</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    49447</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_4;</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    57082</span><br></pre></td></tr></table></figure>
+
+<p>可以看到也是一样的，数据没丢失。</p>
+<p>之前对于重平衡，有提及到如果存在数据量大的情况下，使用 <code>/rebalance</code> 会导致效率低下，建议使用原生的，这一块就暂时不在这边进行测试了。</p>
+<h3 id="故障恢复机制"><a href="#故障恢复机制" class="headerlink" title="故障恢复机制"></a>故障恢复机制</h3><p>当出现 <code>influxdb</code> 实例机器故障，甚至无法恢复的情形下，需要对故障机器所在的 <code>circle</code> 进行数据恢复。步骤如下:</p>
+<ol>
+<li>确定故障 <code>circle</code> 中需要恢复的 <code>influxdb</code> 的实例列表</li>
+<li>修改 <code>proxy.yaml</code> ， 重启 <code>proxy</code></li>
+<li>调用接口 <code>/recovery</code></li>
+</ol>
+<p>与 重平衡 方式相同，在故障恢复的过程中，待 恢复 的 <code>circle</code> 状态被修改为 <code>write only</code> 状态。</p>
+<blockquote>
+<p><code>recovery </code>操作是将一个健康 <code>circle </code>的数据恢复到一个故障 <code>circle </code>中的部分或全部 <code>influxdb</code> 实例，是 <code>circle </code>与 <code>circle </code>之间的单向操作</p>
+</blockquote>
+<p>测试场景:</p>
+<p>在双环四实例的情况下，我们的 监控体系在正常的运行，但是由于某些原因，导致了<code>influx-1</code>节点宕机了，在同事的努力下，我们加紧恢复了宕机的实例，现在，需要进行 故障恢复。</p>
+<p>现在先让数据正常写入 20 万+ 的数据。</p>
+<p>现在我们新写入的数据已经完全写入了，在 <code>influx-1</code>实例中有<code>test_udp_proxy_2/3/4</code> 三张 <code>measurements</code> , </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&gt; select sum(count) from test_udp_proxy_2</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    54150</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    44186</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_4</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    38392</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>influx-2</code> 中有 ``test_udp_proxy_1<code>。现在某些原因导致</code> influx-1<code>宕机了。此时我们的</code>influx-proxy` 的控制台会有许多的 错误信息输出:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http error: Get <span class="string">&quot;http://10.20.1.100:8086/ping&quot;</span>: dial tcp 10.20.1.100:8086: connect: connection refused</span><br></pre></td></tr></table></figure>
+
+<p>说明此时服务的确宕机了。</p>
+<p>现在先看下，<code>influx-2</code> 的 <code>measurement</code> <code>test_udp_proxy_1</code> 的数据量 :</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt; show measurements;</span><br><span class="line">name: measurements</span><br><span class="line">name</span><br><span class="line">----</span><br><span class="line">test_udp_proxy_1</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    63272</span><br></pre></td></tr></table></figure>
+
+<p>现在我们再来写入10万+ 的数据，写入后，看到这个 <code>measurement</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> select sum(count) from test_udp_proxy_1;</span><br><span class="line">name: test_udp_proxy_1</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    82684</span><br></pre></td></tr></table></figure>
+
+<p>现在我们记得总数是 30万。</p>
+<p>同时，我们可以看到<code> influx-proxy</code> 的控制台:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">2020/12/01 02:08:42.085847 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 339534</span><br><span class="line">2020/12/01 02:08:42.157719 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 644522</span><br><span class="line">2020/12/01 02:08:42.179808 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 686160</span><br><span class="line">2020/12/01 02:08:42.238606 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 864648</span><br><span class="line">2020/12/01 02:08:42.311226 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 1167014</span><br><span class="line">2020/12/01 02:08:42.374178 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 1472186</span><br><span class="line">2020/12/01 02:08:42.432237 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 1744100</span><br><span class="line">2020/12/01 02:08:42.455364 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 1771432</span><br><span class="line">2020/12/01 02:08:42.500429 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 1922550</span><br><span class="line">2020/12/01 02:08:42.513067 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 1926284</span><br><span class="line">2020/12/01 02:08:42.568242 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 2113926</span><br><span class="line">2020/12/01 02:08:42.623643 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 2357458</span><br><span class="line">2020/12/01 02:08:42.666539 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 2563086</span><br><span class="line">2020/12/01 02:08:42.738340 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 2764160</span><br><span class="line">2020/12/01 02:08:42.780365 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 2827556</span><br><span class="line">2020/12/01 02:08:42.828035 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 3049376</span><br><span class="line">2020/12/01 02:08:42.875487 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 3247690</span><br><span class="line">2020/12/01 02:08:42.907580 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 3341124</span><br><span class="line">2020/12/01 02:08:42.973571 /opt/project/go/src/influx-proxy/backend/file.go:169: write meta: influxdb-1-1, 0</span><br></pre></td></tr></table></figure>
+
+<p>现在重启 <code>influx-1</code> 实例，</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">root@influxdb-1:/home/ubuntu<span class="comment"># docker stop influx-1</span></span><br><span class="line">influx-1</span><br><span class="line">root@influxdb-1:/home/ubuntu<span class="comment"># docker ps</span></span><br><span class="line">CONTAINER ID        IMAGE                                               COMMAND                  CREATED             STATUS              PORTS                    NAMES</span><br><span class="line">ce7b209e044a        harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine   <span class="string">&quot;/entrypoint.sh infl…&quot;</span>   4 days ago          Up 4 days           0.0.0.0:8087-&gt;8086/tcp   influx-2</span><br><span class="line">55359b67637e        harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine   <span class="string">&quot;/entrypoint.sh infl…&quot;</span>   4 days ago          Up 4 days           0.0.0.0:8088-&gt;8086/tcp   influx-3</span><br><span class="line">root@influxdb-1:/home/ubuntu<span class="comment"># docker start influx-1</span></span><br><span class="line">influx-1</span><br><span class="line">root@influxdb-1:/home/ubuntu<span class="comment"># docker ps</span></span><br><span class="line">CONTAINER ID        IMAGE                                               COMMAND                  CREATED             STATUS              PORTS                    NAMES</span><br><span class="line">ce7b209e044a        harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine   <span class="string">&quot;/entrypoint.sh infl…&quot;</span>   4 days ago          Up 4 days           0.0.0.0:8087-&gt;8086/tcp   influx-2</span><br><span class="line">28d6ac38adde        harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine   <span class="string">&quot;/entrypoint.sh infl…&quot;</span>   4 days ago          Up 2 seconds        0.0.0.0:8086-&gt;8086/tcp   influx-1</span><br><span class="line">55359b67637e        harbor.oneitfarm.com/cidata/influxdb:1.8.3-alpine   <span class="string">&quot;/entrypoint.sh infl…&quot;</span>   4 days ago          Up 4 days           0.0.0.0:8088-&gt;8086/tcp   influx-3</span><br></pre></td></tr></table></figure>
+
+<p>重启后，我们看一下 <code>influx-1</code> 里面的 <code>measurement</code>,</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&gt; use msp;</span><br><span class="line">Using database msp</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_2</span><br><span class="line">name: test_udp_proxy_2</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    79730</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_3</span><br><span class="line">name: test_udp_proxy_3</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    57644</span><br><span class="line">&gt; select sum(count) from test_udp_proxy_4</span><br><span class="line">name: test_udp_proxy_4</span><br><span class="line">time sum</span><br><span class="line">---- ---</span><br><span class="line">0    79942</span><br></pre></td></tr></table></figure>
+
+<p>这里我们重启后，我们发现 表中的 数据被更新了。经过求和，我们发现 最后的总数是在 30万。</p>
+<h3 id="数据同步机制"><a href="#数据同步机制" class="headerlink" title="数据同步机制"></a>数据同步机制</h3><p>由于环境的不同，会有概率出现各个 <code>circle </code>数据不一致的情况、导致脏读问题，因此需要定期做数据同步，以达到数据一致性，实现方案是对所有 <code>circle </code>的数据进行互相同步。步骤:</p>
+<ol>
+<li>确定开始同步的时间点（10位时间戳），将同步此时间点及之后的数据</li>
+<li>调用接口 <code>/resync</code></li>
+</ol>
+<blockquote>
+<p><code>resync </code>操作是所有 <code>circle </code>直接互相同步数据的操作</p>
+</blockquote>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><ol>
+<li><code>Influx Proxy</code> 是一个基于高可用、一致性哈希的 <code>InfluxDB </code>集群代理服务;</li>
+<li>针对 <code>InfluxDB </code>高可用集群无侵入式部署方案，且支持 <code>influxdb </code>原生的 写入与 查询功能，进过改进，增加了 <code>UDP </code>的写入形式;</li>
+<li>具有动态扩/缩容、故障恢复、数据同步等能力;</li>
+<li>在不考虑时间精度的影响下，<code>influx-proxy</code>的数据转发能力达到 100%</li>
+<li>完全满足目前公司针对 <code>InfluxDB</code> 的集群化要求。</li>
+</ol>
+<h2 id="API"><a href="#API" class="headerlink" title="API"></a>API</h2><h3 id="接口-rebalance"><a href="#接口-rebalance" class="headerlink" title="接口 /rebalance"></a>接口 <code>/rebalance</code></h3><h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST http://127.0.0.1:80/rebalance</span><br></pre></td></tr></table></figure>
+
+<h4 id="Params"><a href="#Params" class="headerlink" title="Params"></a>Params</h4><table>
+<thead>
+<tr>
+<th>查询参数</th>
+<th>可选/必须</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>circle_id=0</td>
+<td>必须</td>
+<td>circle 的 id，从索引 0 开始</td>
+</tr>
+<tr>
+<td>operation=<operation></td>
+<td>必须</td>
+<td>操作类型，可选值为 add 或 rm</td>
+</tr>
+<tr>
+<td>dbs=<dbs></td>
+<td>可选</td>
+<td>数据库列表，以英文逗号 ‘,’ 分隔，为空时将默认为全部数据库</td>
+</tr>
+<tr>
+<td>worker=1</td>
+<td>可选</td>
+<td>迁移数据用到的最大线程数，默认为 1</td>
+</tr>
+<tr>
+<td>batch=25000</td>
+<td>可选</td>
+<td>迁移数据时一批的写入点数，默认为 25000</td>
+</tr>
+<tr>
+<td>limit=1000000</td>
+<td>可选</td>
+<td>迁移数据时一次查询的限制行数，默认为 1000000</td>
+</tr>
+<tr>
+<td>ha_addrs=<ha_addrs></td>
+<td>必须 (若至少有两个正在运行的 influx proxy 实例时)</td>
+<td>所有正在运行的 influx proxy 实例的高可用地址列表 (<code>host1:port1,host2:port2...</code>)，以英文逗号 ‘,’ 分隔，单实例时此参数将被忽略</td>
+</tr>
+<tr>
+<td>u=<username></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证用户，若启用认证</td>
+</tr>
+<tr>
+<td>p=<password></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证密码，若启用认证</td>
+</tr>
+</tbody></table>
+<h4 id="Body"><a href="#Body" class="headerlink" title="Body"></a>Body</h4><p>当 <code>operation</code> 为 <code>rm</code> 的时候，必须添加被移除的 <code>influxdb </code>实例的配置信息，以 <code>json </code>格式放入到请求 <code>body </code>中</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;backends&quot;</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;influxdb-1-1&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;url&quot;</span>: <span class="string">&quot;http://127.0.0.1:8086&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;username&quot;</span>: <span class="string">&quot;root&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;password&quot;</span>: <span class="string">&quot;123456&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;auth_secure&quot;</span>: <span class="literal">false</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="接口-recovery"><a href="#接口-recovery" class="headerlink" title="接口 /recovery"></a>接口 <code>/recovery</code></h3><p>将指定 circle 的全量数据恢复到故障的 circle 的全部或部分实例</p>
+<h4 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST http://127.0.0.1:80/recovery</span><br></pre></td></tr></table></figure>
+
+<h4 id="Params-1"><a href="#Params-1" class="headerlink" title="Params"></a>Params</h4><table>
+<thead>
+<tr>
+<th>查询参数</th>
+<th>可选/必须</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>from_circle_id=0</td>
+<td>必须</td>
+<td>来源 circle 的 id，从索引 0 开始</td>
+</tr>
+<tr>
+<td>to_circle_id=1</td>
+<td>必须</td>
+<td>待恢复 circle 的 id，从索引 0 开始</td>
+</tr>
+<tr>
+<td>backend_urls=<backend_urls></td>
+<td>可选</td>
+<td>待恢复的 influxdb 实例 url 列表，以英文逗号 ‘,’ 分隔，为空时将默认为待恢复 circle 的全部 influxdb 实例 url 列表</td>
+</tr>
+<tr>
+<td>dbs=<dbs></td>
+<td>可选</td>
+<td>数据库列表，以英文逗号 ‘,’ 分隔，为空时将默认为全部数据库</td>
+</tr>
+<tr>
+<td>worker=1</td>
+<td>可选</td>
+<td>迁移数据用到的最大线程数，默认为 1</td>
+</tr>
+<tr>
+<td>batch=25000</td>
+<td>可选</td>
+<td>迁移数据时一批的写入点数，默认为 25000</td>
+</tr>
+<tr>
+<td>limit=1000000</td>
+<td>可选</td>
+<td>迁移数据时一次查询的限制行数，默认为 1000000</td>
+</tr>
+<tr>
+<td>ha_addrs=<ha_addrs></td>
+<td>必须 (若至少有两个正在运行的 influx proxy 实例时)</td>
+<td>所有正在运行的 influx proxy 实例的高可用地址列表 (<code>host1:port1,host2:port2...</code>)，以英文逗号 ‘,’ 分隔，单实例时此参数将被忽略</td>
+</tr>
+<tr>
+<td>u=<username></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证用户，若启用认证</td>
+</tr>
+<tr>
+<td>p=<password></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证密码，若启用认证</td>
+</tr>
+</tbody></table>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从 circle 0 恢复所有数据到 circle 1</span></span><br><span class="line">curl -X POST <span class="string">&#x27;http://127.0.0.1:80/recovery?from_circle_id=0&amp;to_circle_id=1&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="接口-transfer-stats"><a href="#接口-transfer-stats" class="headerlink" title="接口 /transfer/stats"></a>接口 <code>/transfer/stats</code></h3><p>查询迁移进度统计信息</p>
+<h4 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET http://127.0.0.1:80/transfer/stats</span><br></pre></td></tr></table></figure>
+
+<h4 id="Params-2"><a href="#Params-2" class="headerlink" title="Params"></a>Params</h4><table>
+<thead>
+<tr>
+<th>查询参数</th>
+<th>可选/必须</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>circle_id=0</td>
+<td>必须</td>
+<td>circle 的 id，从索引 0 开始</td>
+</tr>
+<tr>
+<td>type=<type></td>
+<td>必须</td>
+<td>状态统计类型，可选值为 rebalance、recovery、resync 或 cleanup</td>
+</tr>
+<tr>
+<td>pretty=true</td>
+<td>可选</td>
+<td>以美化的 json 格式输出</td>
+</tr>
+<tr>
+<td>u=<username></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证用户，若启用认证</td>
+</tr>
+<tr>
+<td>p=<password></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证密码，若启用认证</td>
+</tr>
+</tbody></table>
+<h3 id="接口-cleanup"><a href="#接口-cleanup" class="headerlink" title="接口 /cleanup"></a>接口 <code>/cleanup</code></h3><p>对指定的 circle 中不该存储在对应实例的错误数据进行清理</p>
+<h4 id="定义-3"><a href="#定义-3" class="headerlink" title="定义"></a>定义</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST http://127.0.0.1:80/cleanup</span><br></pre></td></tr></table></figure>
+
+<h4 id="Params-3"><a href="#Params-3" class="headerlink" title="Params"></a>Params</h4><table>
+<thead>
+<tr>
+<th>查询参数</th>
+<th>可选/必须</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>circle_id=0</td>
+<td>必须</td>
+<td>circle 的 id，从索引 0 开始</td>
+</tr>
+<tr>
+<td>worker=1</td>
+<td>可选</td>
+<td>迁移数据用到的最大线程数，默认为 1</td>
+</tr>
+<tr>
+<td>batch=25000</td>
+<td>可选</td>
+<td>迁移数据时一批的写入点数，默认为 25000</td>
+</tr>
+<tr>
+<td>limit=1000000</td>
+<td>可选</td>
+<td>迁移数据时一次查询的限制行数，默认为 1000000</td>
+</tr>
+<tr>
+<td>ha_addrs=<ha_addrs></td>
+<td>必须 (若至少有两个正在运行的 influx proxy 实例时)</td>
+<td>所有正在运行的 influx proxy 实例的高可用地址列表 (<code>host1:port1,host2:port2...</code>)，以英文逗号 ‘,’ 分隔，单实例时此参数将被忽略</td>
+</tr>
+<tr>
+<td>u=<username></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证用户，若启用认证</td>
+</tr>
+<tr>
+<td>p=<password></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证密码，若启用认证</td>
+</tr>
+</tbody></table>
+<h3 id="接口-resync"><a href="#接口-resync" class="headerlink" title="接口 /resync"></a>接口 <code>/resync</code></h3><p>所有 <code>circle </code>互相同步数据</p>
+<h4 id="定义-4"><a href="#定义-4" class="headerlink" title="定义"></a>定义</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST http:&#x2F;&#x2F;127.0.0.1:80&#x2F;resync</span><br></pre></td></tr></table></figure>
+
+<h4 id="Params-4"><a href="#Params-4" class="headerlink" title="Params"></a>Params</h4><table>
+<thead>
+<tr>
+<th>查询参数</th>
+<th>可选/必须</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>tick=<tick></td>
+<td>可选</td>
+<td>所有 circle 互相同步从 <tick> 时间点开始（10位时间戳，包含该点）的数据，默认为 0，表示同步所有历史数据</td>
+</tr>
+<tr>
+<td>dbs=<dbs></td>
+<td>可选</td>
+<td>数据库列表，以英文逗号 ‘,’ 分隔，为空时将默认为全部数据库</td>
+</tr>
+<tr>
+<td>worker=1</td>
+<td>可选</td>
+<td>迁移数据用到的最大线程数，默认为 1</td>
+</tr>
+<tr>
+<td>batch=25000</td>
+<td>可选</td>
+<td>迁移数据时一批的写入点数，默认为 25000</td>
+</tr>
+<tr>
+<td>limit=1000000</td>
+<td>可选</td>
+<td>迁移数据时一次查询的限制行数，默认为 1000000</td>
+</tr>
+<tr>
+<td>ha_addrs=<ha_addrs></td>
+<td>必须 (若至少有两个正在运行的 influx proxy 实例时)</td>
+<td>所有正在运行的 influx proxy 实例的高可用地址列表 (<code>host1:port1,host2:port2...</code>)，以英文逗号 ‘,’ 分隔，单实例时此参数将被忽略</td>
+</tr>
+<tr>
+<td>u=<username></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证用户，若启用认证</td>
+</tr>
+<tr>
+<td>p=<password></td>
+<td>可选 (若未启用认证)</td>
+<td>设置认证密码，若启用认证</td>
+</tr>
+</tbody></table>
+<h3 id="接口-debug-pprof"><a href="#接口-debug-pprof" class="headerlink" title="接口 /debug/pprof"></a>接口 <code>/debug/pprof</code></h3><p>生成用于性能瓶颈排障定位的采样文件</p>
+<h4 id="定义-5"><a href="#定义-5" class="headerlink" title="定义"></a>定义</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://127.0.0.1:80/debug/pprof/</span><br></pre></td></tr></table></figure>
+
+<h4 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -o &lt;path/to/pprof-cpu&gt;  http://127.0.0.1:80/debug/pprof/profile</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -o &lt;path/to/pprof-heap&gt; http://127.0.0.1:80/debug/pprof/heap</span><br></pre></td></tr></table></figure></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">开发实习生</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://sun-iot.gitee.io/posts/61185b64">https://sun-iot.gitee.io/posts/61185b64</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://sun-iot.gitee.io" target="_blank">南风意未起</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/InfluxDB/">InfluxDB</a></div><div class="post_share"><div class="social-share" data-image="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/51eb7ca"><img class="prev-cover" data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Influx-Proxy部署流程以及风险点分析</div></div></a></div><div class="next-post pull-right"><a href="/posts/2755494b"><img class="next-cover" data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">InfluxDB集群化方案之influx-proxy的说明</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/f55d5d0d.html" title="【源码阅读】InfluxDB源码编译"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.SmithRock_ZH-CN6383276214_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-02</div><div class="title">【源码阅读】InfluxDB源码编译</div></div></a></div><div><a href="/posts/4bc7d2a5.html" title="'【源码阅读】InfluxDB源码编译-官方说明'"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.OysterMushroom_ZH-CN6265453153_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-02</div><div class="title">'【源码阅读】InfluxDB源码编译-官方说明'</div></div></a></div><div><a href="/posts/b80e5ef6.html" title="【源码阅读】InfluxDB的Read过程"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.LongIsland_ZH-CN7089248815_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-08-05</div><div class="title">【源码阅读】InfluxDB的Read过程</div></div></a></div><div><a href="/posts/4081c04.html" title="【源码阅读】InfluxDB的启动过程"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.MonteCristo_ZH-CN4343811693_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-08-05</div><div class="title">【源码阅读】InfluxDB的启动过程</div></div></a></div><div><a href="/posts/181a4317.html" title="【源码阅读】InfluxDB的Write过程"><img class="cover" data-lazy-src="https://cn.bing.com/th?id=OHR.BeaverDam_ZH-CN6855160492_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-08-05</div><div class="title">【源码阅读】InfluxDB的Write过程</div></div></a></div><div><a href="/posts/2755494b.html" title="InfluxDB集群化方案之influx-proxy的说明"><img class="cover" data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-12-10</div><div class="title">InfluxDB集群化方案之influx-proxy的说明</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#influx-proxy%E6%97%A0%E4%BE%B5%E5%85%A5%E5%BC%8FInfluxDB%E9%AB%98%E5%8F%AF%E7%94%A8%E6%96%B9%E6%A1%88%E6%B5%8B%E8%AF%95"><span class="toc-text">influx-proxy无侵入式InfluxDB高可用方案测试</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%E6%8F%8F%E8%BF%B0"><span class="toc-text">背景描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%87%86%E5%A4%87"><span class="toc-text">测试准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%8B%E6%B5%8B%E5%87%86%E5%A4%87"><span class="toc-text">压测准备</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%BA%E5%99%A8%E5%87%86%E5%A4%87"><span class="toc-text">机器准备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E4%BE%8B%E5%87%86%E5%A4%87"><span class="toc-text">实例准备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%BA%90%E5%87%86%E5%A4%87"><span class="toc-text">数据源准备</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E6%B5%8B%E8%AF%95"><span class="toc-text">其他测试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%BA%E5%99%A8%E5%87%86%E5%A4%87-1"><span class="toc-text">机器准备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87"><span class="toc-text">数据准备</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E8%BF%87%E7%A8%8B"><span class="toc-text">测试过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%8B%E6%B5%8B%E7%BB%93%E6%9E%9C"><span class="toc-text">压测结果</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E5%89%8D"><span class="toc-text">修改前</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E5%90%8E"><span class="toc-text">修改后</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8E%8B%E6%B5%8B%E7%BB%93%E8%AE%BA"><span class="toc-text">压测结论</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E5%B9%B3%E8%A1%A1%E6%9C%BA%E5%88%B6"><span class="toc-text">重平衡机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%951%EF%BC%9A%E6%89%A9%E5%AE%B9"><span class="toc-text">测试1：扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%952%EF%BC%9A%E7%BC%A9%E5%AE%B9"><span class="toc-text">测试2：缩容</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D%E6%9C%BA%E5%88%B6"><span class="toc-text">故障恢复机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6"><span class="toc-text">数据同步机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-text">结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#API"><span class="toc-text">API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3-rebalance"><span class="toc-text">接口 &#x2F;rebalance</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Params"><span class="toc-text">Params</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Body"><span class="toc-text">Body</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3-recovery"><span class="toc-text">接口 &#x2F;recovery</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89-1"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Params-1"><span class="toc-text">Params</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-text">示例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3-transfer-stats"><span class="toc-text">接口 &#x2F;transfer&#x2F;stats</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89-2"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Params-2"><span class="toc-text">Params</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3-cleanup"><span class="toc-text">接口 &#x2F;cleanup</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89-3"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Params-3"><span class="toc-text">Params</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3-resync"><span class="toc-text">接口 &#x2F;resync</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89-4"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Params-4"><span class="toc-text">Params</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3-debug-pprof"><span class="toc-text">接口 &#x2F;debug&#x2F;pprof</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%B9%89-5"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-1"><span class="toc-text">示例</span></a></li></ol></li></ol></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '44a0c3d7bcb18a2f70d9',
+      clientSecret: '5c734f6dde56cf430ba76c5fbd383ec552ab25a6',
+      repo: 'hexo-blog-comments',
+      owner: 'sun-iot',
+      admin: ['sun-iot'],
+      id: '261a0990a9b48bb4f60d1c4101952e9f',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

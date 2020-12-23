@@ -1,0 +1,390 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>大数据计算引擎之 Flink原理与实现：内存管理 | 南风意未起</title><meta name="keywords" content="Flink"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="本文转载自：Flink原理与实现：内存管理 如今，大数据领域的开源框架（Hadoop，Spark，Storm）都使用的 JVM，当然也包括 Flink。基于 JVM 的数据分析引擎都需要面对将大量数据存到内存中，这就不得不面对 JVM 存在的几个问题：  Java 对象存储密度低。一个只包含 boolean 属性的对象占用了16个字节内存：对象头占了8个，boolean 属性占了1个，对齐填充占了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大数据计算引擎之 Flink原理与实现：内存管理">
+<meta property="og:url" content="https://sun-iot.gitee.io/posts/6a91c706">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:description" content="本文转载自：Flink原理与实现：内存管理 如今，大数据领域的开源框架（Hadoop，Spark，Storm）都使用的 JVM，当然也包括 Flink。基于 JVM 的数据分析引擎都需要面对将大量数据存到内存中，这就不得不面对 JVM 存在的几个问题：  Java 对象存储密度低。一个只包含 boolean 属性的对象占用了16个字节内存：对象头占了8个，boolean 属性占了1个，对齐填充占了">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://flink.apache.org/img/flink-header-logo.svg">
+<meta property="article:published_time" content="2019-11-25T07:54:22.000Z">
+<meta property="article:modified_time" content="2019-11-25T07:54:22.000Z">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="Flink">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flink.apache.org/img/flink-header-logo.svg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/posts/6a91c706"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2019-11-25 15:54:22'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://flink.apache.org/img/flink-header-logo.svg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">大数据计算引擎之 Flink原理与实现：内存管理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-11-25T07:54:22.000Z" title="发表于 2019-11-25 15:54:22">2019-11-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2019-11-25T07:54:22.000Z" title="更新于 2019-11-25 15:54:22">2019-11-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Flink/">Flink</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/6a91c706#post-comment"><span class="gitalk-" id="card-toc"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>本文转载自：<a target="_blank" rel="noopener" href="http://wuchong.me/blog/2016/04/29/flink-internals-memory-manage/#comments">Flink原理与实现：内存管理</a></p>
+<p>如今，大数据领域的开源框架（Hadoop，Spark，Storm）都使用的 JVM，当然也包括 Flink。基于 JVM 的数据分析引擎都需要面对将大量数据存到内存中，这就不得不面对 JVM 存在的几个问题：</p>
+<ol>
+<li>Java 对象存储密度低。一个只包含 boolean 属性的对象占用了16个字节内存：对象头占了8个，boolean 属性占了1个，对齐填充占了7个。而实际上只需要一个bit（1/8字节）就够了。</li>
+<li>Full GC 会极大地影响性能，尤其是为了处理更大数据而开了很大内存空间的JVM来说，GC 会达到秒级甚至分钟级。</li>
+<li>OOM 问题影响稳定性。OutOfMemoryError是分布式计算框架经常会遇到的问题，当JVM中所有对象大小超过分配给JVM的内存大小时，就会发生OutOfMemoryError错误，导致JVM崩溃，分布式框架的健壮性和性能都会受到影响。</li>
+</ol>
+<p>所以目前，越来越多的大数据项目开始自己管理JVM内存了，像 Spark、Flink、HBase，为的就是获得像 C 一样的性能以及避免 OOM 的发生。本文将会讨论 Flink 是如何解决上面的问题的，主要内容包括内存管理、定制的序列化工具、缓存友好的数据结构和算法、堆外内存、JIT编译优化等。</p>
+<h2 id="积极的内存管理"><a href="#积极的内存管理" class="headerlink" title="积极的内存管理"></a>积极的内存管理</h2><p>Flink 并不是将大量对象存在堆上，而是将对象都序列化到一个预分配的内存块上，这个内存块叫做 <code>MemorySegment</code>，它代表了一段固定长度的内存（默认大小为 32KB），也是 Flink 中最小的内存分配单元，并且提供了非常高效的读写方法。你可以把 MemorySegment 想象成是为 Flink 定制的 <code>java.nio.ByteBuffer</code>。它的底层可以是一个普通的 Java 字节数组（<code>byte[]</code>），也可以是一个申请在堆外的 <code>ByteBuffer</code>。每条记录都会以序列化的形式存储在一个或多个<code>MemorySegment</code>中。</p>
+<p>Flink 中的 Worker 名叫 TaskManager，是用来运行用户代码的 JVM 进程。TaskManager 的堆内存主要被分成了三个部分：</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://sun-iot.coding.net/p/hexo-image/git/raw/master/calculation-engine/flink-memory-manage/TB17qs5JpXXXXXhXpXXXXXXXXXX.png" alt="JVM"></p>
+<ul>
+<li><strong>Network Buffers:</strong> 一定数量的32KB大小的 buffer，主要用于数据的网络传输。在 TaskManager 启动的时候就会分配。默认数量是 2048 个，可以通过 <code>taskmanager.network.numberOfBuffers</code> 来配置。（阅读<a target="_blank" rel="noopener" href="http://wuchong.me/blog/2016/04/26/flink-internals-how-to-handle-backpressure/#%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86">这篇文章</a>了解更多Network Buffer的管理）</li>
+<li><strong>Memory Manager Pool:</strong> 这是一个由 <code>MemoryManager</code> 管理的，由众多<code>MemorySegment</code>组成的超大集合。Flink 中的算法（如 sort/shuffle/join）会向这个内存池申请 MemorySegment，将序列化后的数据存于其中，使用完后释放回内存池。默认情况下，池子占了堆内存的 70% 的大小。</li>
+<li><strong>Remaining (Free) Heap:</strong> 这部分的内存是留给用户代码以及 TaskManager 的数据结构使用的。因为这些数据结构一般都很小，所以基本上这些内存都是给用户代码使用的。从GC的角度来看，可以把这里看成的新生代，也就是说这里主要都是由用户代码生成的短期对象。</li>
+</ul>
+<p><strong>注意：Memory Manager Pool 主要在Batch模式下使用。在Steaming模式下，该池子不会预分配内存，也不会向该池子请求内存块。也就是说该部分的内存都是可以给用户代码使用的。不过社区是打算在 Streaming 模式下也能将该池子利用起来。</strong></p>
+<p>Flink 采用类似 DBMS 的 sort 和 join 算法，直接操作二进制数据，从而使序列化/反序列化带来的开销达到最小。所以 Flink 的内部实现更像 C/C++ 而非 Java。如果需要处理的数据超出了内存限制，则会将部分数据存储到硬盘上。如果要操作多块MemorySegment就像操作一块大的连续内存一样，Flink会使用逻辑视图（<code>AbstractPagedInputView</code>）来方便操作。下图描述了 Flink 如何存储序列化后的数据到内存块中，以及在需要的时候如何将数据存储到磁盘上。</p>
+<p>从上面我们能够得出 Flink 积极的内存管理以及直接操作二进制数据有以下几点好处：</p>
+<ol>
+<li><strong>减少GC压力。</strong>显而易见，因为所有常驻型数据都以二进制的形式存在 Flink 的<code>MemoryManager</code>中，这些<code>MemorySegment</code>一直呆在老年代而不会被GC回收。其他的数据对象基本上是由用户代码生成的短生命周期对象，这部分对象可以被 Minor GC 快速回收。只要用户不去创建大量类似缓存的常驻型对象，那么老年代的大小是不会变的，Major GC也就永远不会发生。从而有效地降低了垃圾回收的压力。另外，这里的内存块还可以是堆外内存，这可以使得 JVM 内存更小，从而加速垃圾回收。</li>
+<li><strong>避免了OOM。</strong>所有的运行时数据结构和算法只能通过内存池申请内存，保证了其使用的内存大小是固定的，不会因为运行时数据结构和算法而发生OOM。在内存吃紧的情况下，算法（sort/join等）会高效地将一大批内存块写到磁盘，之后再读回来。因此，<code>OutOfMemoryErrors</code>可以有效地被避免。</li>
+<li><strong>节省内存空间。</strong>Java 对象在存储上有很多额外的消耗（如上一节所谈）。如果只存储实际数据的二进制内容，就可以避免这部分消耗。</li>
+<li><strong>高效的二进制操作 &amp; 缓存友好的计算。</strong>二进制数据以定义好的格式存储，可以高效地比较与操作。另外，该二进制形式可以把相关的值，以及hash值，键值和指针等相邻地放进内存中。这使得数据结构可以对高速缓存更友好，可以从 L1/L2/L3 缓存获得性能的提升（下文会详细解释）。</li>
+</ol>
+<h2 id="为-Flink-量身定制的序列化框架"><a href="#为-Flink-量身定制的序列化框架" class="headerlink" title="为 Flink 量身定制的序列化框架"></a>为 Flink 量身定制的序列化框架</h2><p>目前 Java 生态圈提供了众多的序列化框架：Java serialization, Kryo, Apache Avro 等等。但是 Flink 实现了自己的序列化框架。因为在 Flink 中处理的数据流通常是同一类型，由于数据集对象的类型固定，对于数据集可以只保存一份对象Schema信息，节省大量的存储空间。同时，对于固定大小的类型，也可通过固定的偏移位置存取。当我们需要访问某个对象成员变量的时候，通过定制的序列化工具，并不需要反序列化整个Java对象，而是可以直接通过偏移量，只是反序列化特定的对象成员变量。如果对象的成员变量较多时，能够大大减少Java对象的创建开销，以及内存数据的拷贝大小。</p>
+<p>Flink支持任意的Java或是Scala类型。Flink 在数据类型上有很大的进步，不需要实现一个特定的接口（像Hadoop中的<code>org.apache.hadoop.io.Writable</code>），Flink 能够自动识别数据类型。Flink 通过 Java Reflection 框架分析基于 Java 的 Flink 程序 UDF (User Define Function)的返回类型的类型信息，通过 Scala Compiler 分析基于 Scala 的 Flink 程序 UDF 的返回类型的类型信息。类型信息由 <code>TypeInformation</code> 类表示，TypeInformation 支持以下几种类型：</p>
+<ul>
+<li><code>BasicTypeInfo</code>: 任意Java 基本类型（装箱的）或 String 类型。</li>
+<li><code>BasicArrayTypeInfo</code>: 任意Java基本类型数组（装箱的）或 String 数组。</li>
+<li><code>WritableTypeInfo</code>: 任意 Hadoop Writable 接口的实现类。</li>
+<li><code>TupleTypeInfo</code>: 任意的 Flink Tuple 类型(支持Tuple1 to Tuple25)。Flink tuples 是固定长度固定类型的Java Tuple实现。</li>
+<li><code>CaseClassTypeInfo</code>: 任意的 Scala CaseClass(包括 Scala tuples)。</li>
+<li><code>PojoTypeInfo</code>: 任意的 POJO (Java or Scala)，例如，Java对象的所有成员变量，要么是 public 修饰符定义，要么有 getter/setter 方法。</li>
+<li><code>GenericTypeInfo</code>: 任意无法匹配之前几种类型的类。</li>
+</ul>
+<p>前六种数据类型基本上可以满足绝大部分的Flink程序，针对前六种类型数据集，Flink皆可以自动生成对应的TypeSerializer，能非常高效地对数据集进行序列化和反序列化。对于最后一种数据类型，Flink会使用Kryo进行序列化和反序列化。每个TypeInformation中，都包含了serializer，类型会自动通过serializer进行序列化，然后用Java Unsafe接口写入MemorySegments。对于可以用作key的数据类型，Flink还同时自动生成TypeComparator，用来辅助直接对序列化后的二进制数据进行compare、hash等操作。对于 Tuple、CaseClass、POJO 等组合类型，其TypeSerializer和TypeComparator也是组合的，序列化和比较时会委托给对应的serializers和comparators。如下图展示 一个内嵌型的Tuple3&lt;Integer,Double,Person&gt; 对象的序列化过程。</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://sun-iot.coding.net/p/hexo-image/git/raw/master/calculation-engine/flink-memory-manage/TB1lvdbJFXXXXa9XVXXXXXXXXXX.png" alt="MemorySegment"></p>
+<p>可以看出这种序列化方式存储密度是相当紧凑的。其中 int 占4字节，double 占8字节，POJO多个一个字节的header，PojoSerializer只负责将header序列化进去，并委托每个字段对应的serializer对字段进行序列化。</p>
+<p>Flink 的类型系统可以很轻松地扩展出自定义的TypeInformation、Serializer以及Comparator，来提升数据类型在序列化和比较时的性能。</p>
+<h2 id="Flink-如何直接操作二进制数据"><a href="#Flink-如何直接操作二进制数据" class="headerlink" title="Flink 如何直接操作二进制数据"></a>Flink 如何直接操作二进制数据</h2><p>Flink 提供了如 group、sort、join 等操作，这些操作都需要访问海量数据。这里，我们以sort为例，这是一个在 Flink 中使用非常频繁的操作。</p>
+<p>首先，Flink 会从 MemoryManager 中申请一批 MemorySegment，我们把这批 MemorySegment 称作 sort buffer，用来存放排序的数据。</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://sun-iot.coding.net/p/hexo-image/git/raw/master/calculation-engine/flink-memory-manage/TB1_hhgJFXXXXc2XFXXXXXXXXXX.png"></p>
+<p>我们会把 sort buffer 分成两块区域。一个区域是用来存放所有对象完整的二进制数据。另一个区域用来存放指向完整二进制数据的指针以及定长的序列化后的key（key+pointer）。如果需要序列化的key是个变长类型，如String，则会取其前缀序列化。如上图所示，当一个对象要加到 sort buffer 中时，它的二进制数据会被加到第一个区域，指针（可能还有key）会被加到第二个区域。</p>
+<p>将实际的数据和指针加定长key分开存放有两个目的。第一，交换定长块（key+pointer）更高效，不用交换真实的数据也不用移动其他key和pointer。第二，这样做是缓存友好的，因为key都是连续存储在内存中的，可以大大减少 cache miss（后面会详细解释）。</p>
+<p>排序的关键是比大小和交换。Flink 中，会先用 key 比大小，这样就可以直接用二进制的key比较而不需要反序列化出整个对象。因为key是定长的，所以如果key相同（或者没有提供二进制key），那就必须将真实的二进制数据反序列化出来，然后再做比较。之后，只需要交换key+pointer就可以达到排序的效果，真实的数据不用移动。</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://sun-iot.coding.net/p/hexo-image/git/raw/master/calculation-engine/flink-memory-manage/TB1f6BnJFXXXXbnXFXXXXXXXXXX.png"></p>
+<p>最后，访问排序后的数据，可以沿着排好序的key+pointer区域顺序访问，通过pointer找到对应的真实数据，并写到内存或外部（更多细节可以看这篇文章 <a target="_blank" rel="noopener" href="http://flink.apache.org/news/2015/03/13/peeking-into-Apache-Flinks-Engine-Room.html">Joins in Flink</a>）。</p>
+<h2 id="缓存友好的数据结构和算法"><a href="#缓存友好的数据结构和算法" class="headerlink" title="缓存友好的数据结构和算法"></a>缓存友好的数据结构和算法</h2><p>随着磁盘IO和网络IO越来越快，CPU逐渐成为了大数据领域的瓶颈。从 L1/L2/L3 缓存读取数据的速度比从主内存读取数据的速度快好几个量级。通过性能分析可以发现，CPU时间中的很大一部分都是浪费在等待数据从主内存过来上。如果这些数据可以从 L1/L2/L3 缓存过来，那么这些等待时间可以极大地降低，并且所有的算法会因此而受益。</p>
+<p>在上面讨论中我们谈到的，Flink 通过定制的序列化框架将算法中需要操作的数据（如sort中的key）连续存储，而完整数据存储在其他地方。因为对于完整的数据来说，key+pointer更容易装进缓存，这大大提高了缓存命中率，从而提高了基础算法的效率。这对于上层应用是完全透明的，可以充分享受缓存友好带来的性能提升。</p>
+<h2 id="走向堆外内存"><a href="#走向堆外内存" class="headerlink" title="走向堆外内存"></a>走向堆外内存</h2><p>Flink 基于堆内存的内存管理机制已经可以解决很多JVM现存问题了，为什么还要引入堆外内存？</p>
+<ol>
+<li>启动超大内存（上百GB）的JVM需要很长时间，GC停留时间也会很长（分钟级）。使用堆外内存的话，可以极大地减小堆内存（只需要分配Remaining Heap那一块），使得 TaskManager 扩展到上百GB内存不是问题。</li>
+<li>高效的 IO 操作。堆外内存在写磁盘或网络传输时是 zero-copy，而堆内存的话，至少需要 copy 一次。</li>
+<li>堆外内存是进程间共享的。也就是说，即使JVM进程崩溃也不会丢失数据。这可以用来做故障恢复（Flink暂时没有利用起这个，不过未来很可能会去做）。</li>
+</ol>
+<p>但是强大的东西总是会有其负面的一面，不然为何大家不都用堆外内存呢。</p>
+<ol>
+<li>堆内存的使用、监控、调试都要简单很多。堆外内存意味着更复杂更麻烦。</li>
+<li>Flink 有时需要分配短生命周期的 <code>MemorySegment</code>，这个申请在堆上会更廉价。</li>
+<li>有些操作在堆内存上会快一点点。</li>
+</ol>
+<p>Flink用通过<code>ByteBuffer.allocateDirect(numBytes)</code>来申请堆外内存，用 <code>sun.misc.Unsafe</code> 来操作堆外内存。</p>
+<p>基于 Flink 优秀的设计，实现堆外内存是很方便的。Flink 将原来的 <code>MemorySegment</code> 变成了抽象类，并生成了两个子类。<code>HeapMemorySegment</code> 和 <code>HybridMemorySegment</code>。从字面意思上也很容易理解，前者是用来分配堆内存的，后者是用来分配堆外内存<strong>和堆内存</strong>的。是的，你没有看错，后者既可以分配堆外内存又可以分配堆内存。为什么要这样设计呢？</p>
+<p>首先假设<code>HybridMemorySegment</code>只提供分配堆外内存。在上述堆外内存的不足中的第二点谈到，Flink 有时需要分配短生命周期的 buffer，这些buffer用<code>HeapMemorySegment</code>会更高效。那么当使用堆外内存时，为了也满足堆内存的需求，我们需要同时加载两个子类。这就涉及到了 JIT 编译优化的问题。因为以前 <code>MemorySegment</code> 是一个单独的 final 类，没有子类。JIT 编译时，所有要调用的方法都是确定的，所有的方法调用都可以被去虚化（de-virtualized）和内联（inlined），这可以极大地提高性能（MemroySegment的使用相当频繁）。然而如果同时加载两个子类，那么 JIT 编译器就只能在真正运行到的时候才知道是哪个子类，这样就无法提前做优化。实际测试的性能差距在 2.7 被左右。</p>
+<p>Flink 使用了两种方案：</p>
+<p><strong>方案1：只能有一种 MemorySegment 实现被加载</strong><br>代码中所有的短生命周期和长生命周期的MemorySegment都实例化其中一个子类，另一个子类根本没有实例化过（使用工厂模式来控制）。那么运行一段时间后，JIT 会意识到所有调用的方法都是确定的，然后会做优化。</p>
+<p><strong>方案2：提供一种实现能同时处理堆内存和堆外内存</strong><br>这就是 <code>HybridMemorySegment</code> 了，能同时处理堆与堆外内存，这样就不需要子类了。这里 Flink 优雅地实现了一份代码能同时操作堆和堆外内存。这主要归功于 <code>sun.misc.Unsafe</code>提供的一系列方法，如getLong方法：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sun.misc.Unsafe.getLong(Object reference, long offset)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果reference不为空，则会取该对象的地址，加上后面的offset，从相对地址处取出8字节并得到 long。这对应了堆内存的场景。</li>
+<li>如果reference为空，则offset就是要操作的绝对地址，从该地址处取出数据。这对应了堆外内存的场景。</li>
+</ul>
+<p>这里我们看下 <code>MemorySegment</code> 及其子类的实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">MemorySegment</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 堆内存引用</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">byte</span>[] heapMemory;</span><br><span class="line">  <span class="comment">// 堆外内存地址</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">long</span> address;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//堆内存的初始化</span></span><br><span class="line">  MemorySegment(<span class="keyword">byte</span>[] buffer, Object owner) &#123;</span><br><span class="line">    <span class="comment">//一些先验检查</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">this</span>.heapMemory = buffer;</span><br><span class="line">    <span class="keyword">this</span>.address = BYTE_ARRAY_BASE_OFFSET;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//堆外内存的初始化</span></span><br><span class="line">  MemorySegment(<span class="keyword">long</span> offHeapAddress, <span class="keyword">int</span> size, Object owner) &#123;</span><br><span class="line">    <span class="comment">//一些先验检查</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">this</span>.heapMemory = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">this</span>.address = offHeapAddress;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">long</span> <span class="title">getLong</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> pos = address + index;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= <span class="number">0</span> &amp;&amp; pos &lt;= addressLimit - <span class="number">8</span>) &#123;</span><br><span class="line">      <span class="comment">// 这是我们关注的地方，使用 Unsafe 来操作 on-heap &amp; off-heap</span></span><br><span class="line">      <span class="keyword">return</span> UNSAFE.getLong(heapMemory, pos);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (address &gt; addressLimit) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;segment has been freed&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// index is in fact invalid</span></span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> IndexOutOfBoundsException();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HeapMemorySegment</span> <span class="keyword">extends</span> <span class="title">MemorySegment</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 指向heapMemory的额外引用，用来如数组越界的检查</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">byte</span>[] memory;</span><br><span class="line">  <span class="comment">// 只能初始化堆内存</span></span><br><span class="line">  HeapMemorySegment(<span class="keyword">byte</span>[] memory, Object owner) &#123;</span><br><span class="line">    <span class="keyword">super</span>(Objects.requireNonNull(memory), owner);</span><br><span class="line">    <span class="keyword">this</span>.memory = memory;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HybridMemorySegment</span> <span class="keyword">extends</span> <span class="title">MemorySegment</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ByteBuffer offHeapBuffer;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 堆外内存初始化</span></span><br><span class="line">  HybridMemorySegment(ByteBuffer buffer, Object owner) &#123;</span><br><span class="line">    <span class="keyword">super</span>(checkBufferAndGetAddress(buffer), buffer.capacity(), owner);</span><br><span class="line">    <span class="keyword">this</span>.offHeapBuffer = buffer;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 堆内存初始化</span></span><br><span class="line">  HybridMemorySegment(<span class="keyword">byte</span>[] buffer, Object owner) &#123;</span><br><span class="line">    <span class="keyword">super</span>(buffer, owner);</span><br><span class="line">    <span class="keyword">this</span>.offHeapBuffer = <span class="keyword">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，HybridMemorySegment 中的很多方法其实都下沉到了父类去实现。包括堆内堆外内存的初始化。<code>MemorySegment</code> 中的 <code>getXXX</code>/<code>putXXX</code> 方法都是调用了 unsafe 方法，可以说<code>Me&#39;&#39; morySegment</code>已经具有了些 Hybrid 的意思了。<code>HeapMemorySegment</code>只调用了父类的<code>MemorySegment(byte[] buffer, Object owner)</code>方法，也就只能申请堆内存。另外，阅读代码你会发现，许多方法（大量的 getXXX/putXXX）都被标记成了 final，两个子类也是 final 类型，为的也是优化 JIT 编译器，会提醒 JIT 这个方法是可以被去虚化和内联的。</p>
+<p>对于堆外内存，使用 <code>HybridMemorySegment</code> 能同时用来代表堆和堆外内存。这样只需要一个类就能代表长生命周期的堆外内存和短生命周期的堆内存。既然<code>HybridMemorySegment</code>已经这么全能，为什么还要方案1呢？因为我们需要工厂模式来保证只有一个子类被加载（为了更高的性能），而且HeapMemorySegment比heap模式的HybridMemorySegment要快。</p>
+<p>下方是一些性能测试数据，更详细的数据请参考<a target="_blank" rel="noopener" href="http://flink.apache.org/news/2015/09/16/off-heap-memory.html#appendix-detailed-micro-benchmarks">这篇文章</a>。</p>
+<table>
+<thead>
+<tr>
+<th align="left">Segment</th>
+<th align="left">Time</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">HeapMemorySegment, exclusive</td>
+<td align="left">1,441 msecs</td>
+</tr>
+<tr>
+<td align="left">HeapMemorySegment, mixed</td>
+<td align="left">3,841 msecs</td>
+</tr>
+<tr>
+<td align="left">HybridMemorySegment, heap, exclusive</td>
+<td align="left">1,626 msecs</td>
+</tr>
+<tr>
+<td align="left">HybridMemorySegment, off-heap, exclusive</td>
+<td align="left">1,628 msecs</td>
+</tr>
+<tr>
+<td align="left">HybridMemorySegment, heap, mixed</td>
+<td align="left">3,848 msecs</td>
+</tr>
+<tr>
+<td align="left">HybridMemorySegment, off-heap, mixed</td>
+<td align="left">3,847 msecs</td>
+</tr>
+</tbody></table>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文主要总结了 Flink 面对 JVM 存在的问题，而在内存管理的道路上越走越深。从自己管理内存，到序列化框架，再到堆外内存。其实纵观大数据生态圈，其实会发现各个开源项目都有同样的趋势。比如最近炒的很火热的 Spark Tungsten 项目，与 Flink 在内存管理上的思想是及其相似的。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://flink.apache.org/news/2015/09/16/off-heap-memory.html">Off-heap Memory in Apache Flink and the curious JIT compiler</a></li>
+<li><a target="_blank" rel="noopener" href="https://flink.apache.org/news/2015/05/11/Juggling-with-Bits-and-Bytes.html">Juggling with Bits and Bytes</a></li>
+<li><a target="_blank" rel="noopener" href="https://flink.apache.org/news/2015/03/13/peeking-into-Apache-Flinks-Engine-Room.html">Peeking into Apache Flink’s Engine Room</a></li>
+<li><a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=53741525">Flink: Memory Management</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.bigsynapse.com/addressing-big-data-performance">Big Data Performance Engineering</a></li>
+<li><a target="_blank" rel="noopener" href="http://mishadoff.com/blog/java-magic-part-4-sun-dot-misc-dot-unsafe/">sun.misc.misc.Unsafe usage for C style memory management</a></li>
+<li><a target="_blank" rel="noopener" href="http://howtodoinjava.com/core-java/related-concepts/usage-of-class-sun-misc-unsafe/">sun.misc.misc.Unsafe usage for C style memory management - How to do it.</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.javamex.com/tutorials/memory/object_memory_usage.shtml">Memory usage of Java objects: general guide</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.36dsj.com/archives/33650">脱离JVM？ Hadoop生态圈的挣扎与演化</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">开发实习生</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://sun-iot.gitee.io/posts/6a91c706">https://sun-iot.gitee.io/posts/6a91c706</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://sun-iot.gitee.io" target="_blank">南风意未起</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Flink/">Flink</a></div><div class="post_share"><div class="social-share" data-image="https://flink.apache.org/img/flink-header-logo.svg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/49c314e3"><img class="prev-cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Flink 小贴士 (1)：使用 Broadcast State 的 4 个注意事项</div></div></a></div><div class="next-post pull-right"><a href="/posts/af1f2486"><img class="next-cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">大数据计算引擎Flink的Yarn提交</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/39c50c8f.html" title="大数据计算引擎之Flink获取Phoenix报OOM错误"><img class="cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-02</div><div class="title">大数据计算引擎之Flink获取Phoenix报OOM错误</div></div></a></div><div><a href="/posts/5dfad7dd.html" title="Trouble Shooting For FlinkSql(2)SqlParserException"><img class="cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-09</div><div class="title">Trouble Shooting For FlinkSql(2)SqlParserException</div></div></a></div><div><a href="/posts/c5f729a.html" title="【大数据实时框架 Flink】 22 | Flink Checkpointing 监控与优化&&内存优化"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-01-06</div><div class="title">【大数据实时框架 Flink】 22 | Flink Checkpointing 监控与优化&&内存优化</div></div></a></div><div><a href="/posts/6e31bc0.html" title="聊聊Flink中自定义的DataSink的那些事(1)JDBCInputFormat篇"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-04</div><div class="title">聊聊Flink中自定义的DataSink的那些事(1)JDBCInputFormat篇</div></div></a></div><div><a href="/posts/5aabf7ac.html" title="聊聊Flink中自定义的OutputFormat的那些事(1)ElastaticsearchOutFormat篇"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-05</div><div class="title">聊聊Flink中自定义的OutputFormat的那些事(1)ElastaticsearchOutFormat篇</div></div></a></div><div><a href="/posts/7e766d4f.html" title="大数据计算引擎之Flink SQL"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-11-05</div><div class="title">大数据计算引擎之Flink SQL</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%AF%E6%9E%81%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-text">积极的内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA-Flink-%E9%87%8F%E8%BA%AB%E5%AE%9A%E5%88%B6%E7%9A%84%E5%BA%8F%E5%88%97%E5%8C%96%E6%A1%86%E6%9E%B6"><span class="toc-text">为 Flink 量身定制的序列化框架</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Flink-%E5%A6%82%E4%BD%95%E7%9B%B4%E6%8E%A5%E6%93%8D%E4%BD%9C%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0%E6%8D%AE"><span class="toc-text">Flink 如何直接操作二进制数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E5%8F%8B%E5%A5%BD%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%92%8C%E7%AE%97%E6%B3%95"><span class="toc-text">缓存友好的数据结构和算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B5%B0%E5%90%91%E5%A0%86%E5%A4%96%E5%86%85%E5%AD%98"><span class="toc-text">走向堆外内存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '44a0c3d7bcb18a2f70d9',
+      clientSecret: '5c734f6dde56cf430ba76c5fbd383ec552ab25a6',
+      repo: 'hexo-blog-comments',
+      owner: 'sun-iot',
+      admin: ['sun-iot'],
+      id: '4826e60c6d847f854ba200f0e180d1c8',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

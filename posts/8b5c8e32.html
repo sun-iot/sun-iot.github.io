@@ -1,0 +1,308 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>大数据计算引擎之Flink 时间概念和 Watermark | 南风意未起</title><meta name="keywords" content="Flink,Watermark"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="老夫在之前的大数据计算引擎之Flink概述,大数据计算引擎之Flink流处理基础,里面也有提到过这个Flink里面的 Watermark的 一些事，但是也没具体详细的说。这里补充下">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大数据计算引擎之Flink 时间概念和 Watermark">
+<meta property="og:url" content="https://sun-iot.gitee.io/posts/8b5c8e32">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:description" content="老夫在之前的大数据计算引擎之Flink概述,大数据计算引擎之Flink流处理基础,里面也有提到过这个Flink里面的 Watermark的 一些事，但是也没具体详细的说。这里补充下">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://flink.apache.org/img/flink-header-logo.svg">
+<meta property="article:published_time" content="2019-12-19T01:37:51.000Z">
+<meta property="article:modified_time" content="2019-12-19T01:37:51.000Z">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="Flink">
+<meta property="article:tag" content="Watermark">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flink.apache.org/img/flink-header-logo.svg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/posts/8b5c8e32"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2019-12-19 09:37:51'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://flink.apache.org/img/flink-header-logo.svg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">大数据计算引擎之Flink 时间概念和 Watermark</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-12-19T01:37:51.000Z" title="发表于 2019-12-19 09:37:51">2019-12-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2019-12-19T01:37:51.000Z" title="更新于 2019-12-19 09:37:51">2019-12-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Flink/">Flink</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>10分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/8b5c8e32#post-comment"><span class="gitalk-" id="card-toc"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>老夫在之前的<a target="_blank" rel="noopener" href="http://www.blog.sun-iot.xyz/2019/10/31/CalculationEngine/flink/flink-overview/">大数据计算引擎之Flink概述</a>,<a target="_blank" rel="noopener" href="http://www.blog.sun-iot.xyz/2019/11/05/CalculationEngine/flink/flink-stream-base/">大数据计算引擎之Flink流处理基础</a>,里面也有提到过这个Flink里面的 Watermark的 一些事，但是也没具体详细的说。这里补充下</p>
+<a id="more"></a>
+
+<h2 id="时间概念类型"><a href="#时间概念类型" class="headerlink" title="时间概念类型"></a>时间概念类型</h2><p>对于流式数据处理，最大的特点就是数据上具有时间的属性特征，Flink根据时间产生位置不同，将时间分为三种时间概念，分别为事件生成时间 （Event Time）,事件接入时间（Ingesion Time）和事件处理事件（Processing Time）.<br><img src= "/img/loading.gif" data-lazy-src="https://sun-iot.coding.net/p/hexo-image/git/raw/master/calculation-engine/flink-generating-timestamps-watermarks/%E6%97%B6%E9%97%B4%E6%A6%82%E5%BF%B5%E4%B8%8EWatermark.png" alt="时间概念与Watermark"><br>数据从终端产生，或者从系统产生的过程中生成的时间为事件接入时间，当数据经过消息中间件传入到Flink系统中，在DataSource中接入的时候会生成事件接入时间，当数据在Flink系统中经过各个算子实例执行转换操作的过程中，算子实例所在系统的时间为数据处理时间。下面我们分别来看这三种时间。</p>
+<h3 id="事件事件-Event-Time"><a href="#事件事件-Event-Time" class="headerlink" title="事件事件(Event Time)"></a>事件事件(Event Time)</h3><p>事件事件是每个独立时间在产生它的设备上发生的时间，这个时间通常在进入Flink之前就已经嵌入到事件中，时间顺序取决于事件产生的地方，和下游数据处理系统的时间无关。事件数据具有不变的事件时间属性，该时间自事件元素产生就不会改变。通常情况下可以再Flink系统中指定时间属性或者设定时间提取器来提取事件时间。</p>
+<p>所有进入到Flink流式系统处理的事件，其时间都是在外部系统中产生，经过网络进入到Flink系统内处理的，在理论情况下（所有系统都具有相同的系统时钟），事件时间对应的时间戳一定会早于在Flink系统处理的时间戳，但在实际情况中往往会出现数据记录乱序<br>延迟到达等问题。基于 Event Time 的时间概念，数据处理过程依赖于数据本身产生时间，而不是Flink系统中Operator所在主机节点的系统时间，这样能够借助于事件产生时间信息来还原事件的先后关系。</p>
+<h3 id="接入时间-Ingestion-Time"><a href="#接入时间-Ingestion-Time" class="headerlink" title="接入时间(Ingestion Time)"></a>接入时间(Ingestion Time)</h3><p>接入时间是事件进入Flink的时间。在Source Operator 所在主机的系统时钟，每个记录都将 Source 的当前时间作为时间戳记，并且基于时间的操作（如时间窗口）引用该时间戳记。</p>
+<p>Ingestion Time 从概念上讲介于Event Time 和 Processing Time 之间。与处理时间相比 ，它稍微贵一些，但结果却更可预测。由于 Ingestion Time 使用稳定的时间戳（在源处分配了一次），因此对记录的不同窗口操作将引用相同的时间戳，而在处理时间中，每个窗口操作员都可以将记录分配给不同的窗口（基于本地系统时钟和任何运输延误）。</p>
+<p>与 Event Time 相比，提取时间程序无法处理任何乱序事件或迟到的数据，但是程序不必指定如何生成水印。</p>
+<p>在内部，Ingestion Time与 Event Time 非常相似，但是具有自动时间戳分配和自动水印生成功能。</p>
+<h3 id="处理时间-Processing-Time"><a href="#处理时间-Processing-Time" class="headerlink" title="处理时间(Processing Time)"></a>处理时间(Processing Time)</h3><p>处理时间(Processing Time)是指正在执行相应操作的机器的系统时间。当用户选择使用 Processing Time 时，所有和时间相关的计算算子，例如：Windows计算，在当前的任务中所有的算子将直接使用其所在主机的系统时间。 Processing Time是Flink系统中最简单的一种时间概念，基于Processing Time 时间概念，Flink的程序性能相对比较高，延时也相对比较低，对接入到系统中的数据相关的计算完全交给算子内部决定，时间窗口计算依赖的时间都是在具体算子运行的过程中产生，不需要做任何时间上的对比和协调。但 Processing Time 时间概念虽然在性能和易用性的角度上具有优势，但考虑到对数据乱序处理的情况， Processing Time 就不是最优的选择。同时在分布式系统中，数据本身不乱序，但每台机器的时间如果不同步，也可能导致数据处理过程中数据乱序的问题，从而影响计算结果。总之 <strong>Processing Time 概念适用于时间计算精度要求不是特别高的计算场景</strong>，例如：延时非常高的日志数据等。</p>
+<p>当流式程序按处理时间运行时，所有基于时间的操作（如时间窗口）都将使用运行相应操作员的计算机的系统时钟。每小时处理时间窗口将包括系统时钟指示整小时的时间之间到达特定操作员的所有记录。例如，如果应用程序在9:15 am开始运行，则第一个每小时处理时间窗口将包括在9:15 am和10:00 am之间处理的事件，下一个窗口将包括在10:00 am和11:00 am之间处理的事件，依此类推。上。</p>
+<p>处理时间是最简单的时间概念，不需要流和机器之间的协调。它提供了最佳的性能和最低的延迟。但是，在分布式和异步环境中，处理时间不能提供确定性，因为它容易受到记录到达系统（例如从消息队列）到达系统的速度，记录在系统内部操作员之间流动的速度的影响。 ，以及中断（计划的或其他方式）</p>
+<h3 id="时间概念的指定"><a href="#时间概念的指定" class="headerlink" title="时间概念的指定"></a>时间概念的指定</h3><p>Java版本</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line"></span><br><span class="line">env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);</span><br></pre></td></tr></table></figure>
+
+<p>Scala版本</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">val env = StreamExecutionEnvironment.getExecutionEnvironment</span><br><span class="line"></span><br><span class="line">env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime)</span><br></pre></td></tr></table></figure>
+
+<p>Python</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">env = StreamExecutionEnvironment.get_execution_environment()</span><br><span class="line"></span><br><span class="line">env.set_stream_time_characteristic(TimeCharacteristic.ProcessingTime)</span><br></pre></td></tr></table></figure>
+
+<p><img src= "/img/loading.gif" data-lazy-src="https://sun-iot.coding.net/p/hexo-image/git/raw/master/calculation-engine/flink-generating-timestamps-watermarks/%E6%97%B6%E9%97%B4%E6%8C%87%E5%AE%9A.png" alt="时间指定"></p>
+<h2 id="EventTime-和-Watermark"><a href="#EventTime-和-Watermark" class="headerlink" title="EventTime 和 Watermark"></a>EventTime 和 Watermark</h2><p>通常情况下由于网络或者系统等外部因素影响下，书剑数据往往不能及时传输至 Flink 系统中，导致系统的不稳定而造成数据乱序到达或者延迟到达等问题，因此，需要有一种机制能够控制数据处理的进度。具体的来讲，在创建一个基于事件时间的Window 后，需要确定属于该Window的数据元素是否已经全部到达，确定后才可以对Window中的所有数据做计算处理，如果数据并没有全部到达，则继续等待窗口中的数据全部到达后再开始处理。在这种情况下，就需要用到水位线(Watermark)机制，它能够衡量数据处理进度（表达数据到达的完整性），保证事件数据全部到达 Flink 系统，即使数据乱序或者延迟到达，也能够像预期一样计算出正确和连续的结果。Flink会使用最新的事件时间减去固定时间间隔作为 Watermaters ，该时间间隔为用户外部配置的的支持最大延迟到达时间长度，也就是说不会有事件超过该时间间隔到达，否则就认为是迟到事件或者异常事件。例如：设定时间间隔为 5s ，算子会根据接入算子中最新事件的时间减去 5s 来更新其水位线时间戳，当窗口结束时间大于 Operator 水位线时间戳，且窗口中含有事件数据，则会立即出发窗口进行计算。总的来说：<strong>水位线的作用就是告知Operator在后面不会小于等于水位线时间戳的事件接入，满足条件既可以出发相应的窗口计算</strong><br><strong>顺序事件中的Watermark</strong><br>Flink中衡量事件时间进度的机制是 Watermark 。如果数据元素的事件时间是有序的，Watermark时间戳会随着数据元素的事件时间按顺序生成，此时 Watermark 的变化和事件时间保持一致，也就是理想状态下的水位线。当所在算子实例的 Watermark 时间戳大于窗口结束时间，同时窗口中含有数据元素，此时便会触发对当前窗口的数据计算。<br><img src= "/img/loading.gif" data-lazy-src="https://ci.apache.org/projects/flink/flink-docs-release-1.9/fig/stream_watermark_in_order.svg" alt="顺序时间中的Watermark"><br><strong>乱序事件中的 Watermark</strong><br>显示情况下数据元素往往不是按照其产生顺序接入到Flink系统中的进行处理的，而频繁出现乱序或迟到的情况，这种情况下就需要用到 Wartermaks 来应对。如图所示： Event11 和 Event17 进入到系统中，Flink会根据设定的延时值分别计算出 Watermark W(11) 和  Watermark W(17) ，这两个Watermark到达一个Operator后便立即调整算子基于事件时间的虚拟时间与当前的 Watermark 相匹配，然后再触发相应的计算以及输出操作。<br><img src= "/img/loading.gif" data-lazy-src="https://ci.apache.org/projects/flink/flink-docs-release-1.9/fig/stream_watermark_out_of_order.svg" alt="乱序事件中的Watermark"><br><strong>并行数据流中的 Watermark</strong><br>Watermark 在 Source Operator 中生成，并且在每个 Source Operator 的子 Task 中都会独立生成 Watermark .在Source Operator 的子任务中生成后就会更新该 Task 的Watermark ,且会逐步更新下游算子中的 Watermark 水位线，随后一直保持在该并发之中，知道下一次 Watermark 的生成，并对前面的 Watermark 进行覆盖。如图所示：W(17) 水位线已经将 Source 和 Map 算子中的子任务的时间全部更新到 17 ， 并且会一直随着事件向后移动更新下游算子中的事件时间。如果多个 Watermark 同时更新一个算子Task的当前事件时间，Flink会选择最小的水位线来更新。当一个 Window 算子 Task 中水位线大于了 Window 结束时间，就会立即触发窗口计算。<br><img src= "/img/loading.gif" data-lazy-src="https://ci.apache.org/projects/flink/flink-docs-release-1.9/fig/parallel_streams_watermarks.svg" alt="Flink并行数据流中的Watermark"></p>
+<h3 id="Generating-Timestamps-Watermarks"><a href="#Generating-Timestamps-Watermarks" class="headerlink" title="Generating Timestamps / Watermarks"></a>Generating Timestamps / Watermarks</h3><h4 id="代码层"><a href="#代码层" class="headerlink" title="代码层"></a>代码层</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();</span><br><span class="line">env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);</span><br></pre></td></tr></table></figure>
+
+<h4 id="时间戳的分配"><a href="#时间戳的分配" class="headerlink" title="时间戳的分配"></a>时间戳的分配</h4><p>为了使用 Event Time , Flink 需要知道事件的时间戳，这意味着流中的每个元素都需要分配其事件时间戳。这通常是通过从元素的某个字段 <strong>访问/提取</strong> 时间戳来完成的。<br>时间戳分配与生成 Watermark 齐头并进，Watermark 告诉系统事件时间的进展。<br>有两种分配时间戳和生成 Watermark 的方法：</p>
+<ul>
+<li>在DataStream Source 算子接口的 Source Function 中定义</li>
+<li>自定义 Timestamp Assigner 和 Watermark Generator生成</li>
+</ul>
+<p><strong>在Source Function直接定义Timestamp和Watermark</strong><br>在 DataStream Source 算子中指定 EventTime Timestamps, 也就是说在数据进入到 Flink 系统中就直接分配 EventTime 和 Watermark 。用户可需要复写SourceFunction接口中的run() 方法实现数据的生成逻辑，同时需要 SourceContext() 的 collectWithTimestamp() 方法生成 EventTime 时间戳，调用 emitWatermark() 方法生成 Watermarks.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">val input = List((<span class="string">&quot;a&quot;</span>, <span class="number">1L</span>, <span class="number">1</span>), ...... )</span><br><span class="line">val source: DataStream[(String, Long, Int)] = environment.addSource(</span><br><span class="line">  <span class="keyword">new</span> SourceFunction[(String, Long, Int)] &#123;</span><br><span class="line">    <span class="comment">// 复写 run 方法， 调用 SourceFunction 接口</span></span><br><span class="line">    <span class="function">override def <span class="title">run</span><span class="params">(ctx: SourceFunction.SourceContext[(String, Long, Int)</span>]): Unit </span>= &#123;</span><br><span class="line">      input.foreach(</span><br><span class="line">        in =&gt; &#123;</span><br><span class="line">          <span class="comment">// 调用collectWithTimestamp ， 增加 Event Time 抽取</span></span><br><span class="line">          ctx.collectWithTimestamp(in, in._2)</span><br><span class="line">          <span class="comment">// 调用 emitWatermark ，创建 Watermark ，最大延迟设置为 1</span></span><br><span class="line">          ctx.emitWatermark(<span class="keyword">new</span> Watermark(in._2 - <span class="number">1</span>))</span><br><span class="line">        &#125;</span><br><span class="line">      )</span><br><span class="line">      <span class="comment">// 设定默认的 Watermark</span></span><br><span class="line">      ctx.emitWatermark(<span class="keyword">new</span> Watermark(Long.MaxValue))</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">override def <span class="title">cancel</span><span class="params">()</span>: Unit </span>= &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>通过Flink提供的 Timestamp Assigner 指定Timestamp 和生成 Watermark</strong><br>若用户使用了Flink已经定义的外部数据源连接器，就不能实现 SourceFunction 接口来生成流式数据以及相应的 Event Time 和 Watermark ， 这种时候，就需要借助 Timestamp Assigner 来管理数据流中的 Timastamp 元素和 Watermark.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用系统默认的 Ascending 分配时间信息 和 Watermark</span></span><br><span class="line">val res1: DataStream[(String, Long, Int)] = value</span><br><span class="line">  .assignAscendingTimestamps(t =&gt; t._2).keyBy(<span class="number">0</span>).timeWindow(Time.seconds(<span class="number">10</span>)).sum(<span class="string">&quot;_2&quot;</span>)</span><br><span class="line">res1.print()</span><br></pre></td></tr></table></figure>
+
+<p><strong>自定义Timestamp Assigner 和 Watgermark Generator</strong><br>前面使用的都是已经定义好了的 Timestamp Watermark, 用户也可以自定义实现 <code>AssignerWithPeriodicWatermarks</code> 和 <code>AssignerWithPunctuatedWatermarks</code> 两个接口来实现和生成 Watermarks. 在定义和实现 AssignerWithPeriodicWatermarks 接口前，需要先在 ExecutionConfig 中调用 setAutoWatermarkInterval() 方法设定 Watermarks 产生的时间周期。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">val value: DataStream[(String, Long, Int)] = environment.fromCollection(input)</span><br><span class="line">value.assignTimestampsAndWatermarks(<span class="keyword">new</span> AssignerWithPeriodicWatermarks[(String, Long, Int)] &#123;</span><br><span class="line">  <span class="keyword">var</span> currentTimestamp: Long = _</span><br><span class="line">  val maxOfOutTime = <span class="number">1000L</span></span><br><span class="line">  override def getCurrentWatermark: Watermark = &#123;</span><br><span class="line">    <span class="keyword">new</span> Watermark(currentTimestamp - maxOfOutTime)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">override def <span class="title">extractTimestamp</span><span class="params">(element: (String, Long, Int)</span>, previousElementTimestamp: Long): Long </span>= &#123;</span><br><span class="line">    val timestamp = element._2</span><br><span class="line">    currentTimestamp = Math.max(timestamp, currentTimestamp)</span><br><span class="line">    currentTimestamp</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>以上源程序可参考：<a target="_blank" rel="noopener" href="https://gitee.com/sun-iot/flink-ci123/blob/master/flink-test/src/main/scala/com/ci123/flink/test/FlinkWatermarkTest.scala">FlinkWatermarkTest</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">开发实习生</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://sun-iot.gitee.io/posts/8b5c8e32">https://sun-iot.gitee.io/posts/8b5c8e32</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://sun-iot.gitee.io" target="_blank">南风意未起</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Flink/">Flink</a><a class="post-meta__tags" href="/tags/Watermark/">Watermark</a></div><div class="post_share"><div class="social-share" data-image="https://flink.apache.org/img/flink-header-logo.svg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/79c7b229"><img class="prev-cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">【Flink】状态管理&amp;&amp;容错</div></div></a></div><div class="next-post pull-right"><a href="/posts/23f93c01"><img class="next-cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">大数据计算引擎之Flink 全局TopN</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/39c50c8f.html" title="大数据计算引擎之Flink获取Phoenix报OOM错误"><img class="cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-02</div><div class="title">大数据计算引擎之Flink获取Phoenix报OOM错误</div></div></a></div><div><a href="/posts/5dfad7dd.html" title="Trouble Shooting For FlinkSql(2)SqlParserException"><img class="cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-09</div><div class="title">Trouble Shooting For FlinkSql(2)SqlParserException</div></div></a></div><div><a href="/posts/c5f729a.html" title="【大数据实时框架 Flink】 22 | Flink Checkpointing 监控与优化&&内存优化"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-01-06</div><div class="title">【大数据实时框架 Flink】 22 | Flink Checkpointing 监控与优化&&内存优化</div></div></a></div><div><a href="/posts/6e31bc0.html" title="聊聊Flink中自定义的DataSink的那些事(1)JDBCInputFormat篇"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-04</div><div class="title">聊聊Flink中自定义的DataSink的那些事(1)JDBCInputFormat篇</div></div></a></div><div><a href="/posts/5aabf7ac.html" title="聊聊Flink中自定义的OutputFormat的那些事(1)ElastaticsearchOutFormat篇"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-05</div><div class="title">聊聊Flink中自定义的OutputFormat的那些事(1)ElastaticsearchOutFormat篇</div></div></a></div><div><a href="/posts/7e766d4f.html" title="大数据计算引擎之Flink SQL"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-11-05</div><div class="title">大数据计算引擎之Flink SQL</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%A6%82%E5%BF%B5%E7%B1%BB%E5%9E%8B"><span class="toc-text">时间概念类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E4%BA%8B%E4%BB%B6-Event-Time"><span class="toc-text">事件事件(Event Time)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%85%A5%E6%97%B6%E9%97%B4-Ingestion-Time"><span class="toc-text">接入时间(Ingestion Time)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%97%B6%E9%97%B4-Processing-Time"><span class="toc-text">处理时间(Processing Time)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%A6%82%E5%BF%B5%E7%9A%84%E6%8C%87%E5%AE%9A"><span class="toc-text">时间概念的指定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EventTime-%E5%92%8C-Watermark"><span class="toc-text">EventTime 和 Watermark</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Generating-Timestamps-Watermarks"><span class="toc-text">Generating Timestamps &#x2F; Watermarks</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%B1%82"><span class="toc-text">代码层</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%88%B3%E7%9A%84%E5%88%86%E9%85%8D"><span class="toc-text">时间戳的分配</span></a></li></ol></li></ol></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '44a0c3d7bcb18a2f70d9',
+      clientSecret: '5c734f6dde56cf430ba76c5fbd383ec552ab25a6',
+      repo: 'hexo-blog-comments',
+      owner: 'sun-iot',
+      admin: ['sun-iot'],
+      id: 'e942996ec09c4c23b530a1144c43ff65',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

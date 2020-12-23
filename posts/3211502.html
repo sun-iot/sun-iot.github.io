@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cassandra内部架构以及数据写入流程 | 南风意未起</title><meta name="keywords" content="NoSQL,Cassandra"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="原文地址:在原文基础上有所删减  Cassandra内部架构上两篇分析了Cassandra集群架构，下面我们剖析Cassandra内部架构。Cassandra守护进程管理各种内存和磁盘中的数据结构，如下图所示。  Commit Logs(提交日志)用于记录对磁盘的写操作，作为故障恢复机制。 在Cassandra中写入效率高的原因之一就是所有Keyspace共享一个提交日志，因此只要写操作将数据追">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra内部架构以及数据写入流程">
+<meta property="og:url" content="https://sun-iot.gitee.io/posts/3211502">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:description" content="原文地址:在原文基础上有所删减  Cassandra内部架构上两篇分析了Cassandra集群架构，下面我们剖析Cassandra内部架构。Cassandra守护进程管理各种内存和磁盘中的数据结构，如下图所示。  Commit Logs(提交日志)用于记录对磁盘的写操作，作为故障恢复机制。 在Cassandra中写入效率高的原因之一就是所有Keyspace共享一个提交日志，因此只要写操作将数据追">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://allvectorlogo.com/img/2016/05/cassandra-logo.png">
+<meta property="article:published_time" content="2020-09-21T08:09:30.000Z">
+<meta property="article:modified_time" content="2020-09-21T08:09:30.000Z">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="NoSQL">
+<meta property="article:tag" content="Cassandra">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://allvectorlogo.com/img/2016/05/cassandra-logo.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/posts/3211502"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2020-09-21 16:09:30'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(http://allvectorlogo.com/img/2016/05/cassandra-logo.png)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Cassandra内部架构以及数据写入流程</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-09-21T08:09:30.000Z" title="发表于 2020-09-21 16:09:30">2020-09-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-09-21T08:09:30.000Z" title="更新于 2020-09-21 16:09:30">2020-09-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/NoSQL/">NoSQL</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/NoSQL/Cassandra/">Cassandra</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/3211502#post-comment"><span class="gitalk-" id="card-toc"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>原文地址:<br>在原文基础上有所删减</p>
+</blockquote>
+<h2 id="Cassandra内部架构"><a href="#Cassandra内部架构" class="headerlink" title="Cassandra内部架构"></a>Cassandra内部架构</h2><p>上两篇分析了Cassandra集群架构，下面我们剖析Cassandra内部架构。Cassandra守护进程管理各种内存和磁盘中的数据结构，如下图所示。</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://blog-resource.gitee.io/cassandra/Cassandra-Storage-Engine.jpg"></p>
+<p>Commit Logs(提交日志)用于记录对磁盘的写操作，作为故障恢复机制。 在Cassandra中写入效率高的原因之一就是所有Keyspace共享一个提交日志，因此只要写操作将数据追加到副本上的提交日志中(就协调器节点而言)，就算写入完成。</p>
+<p>SSTables(Sorted String Tables)为Cassandra提供磁盘存储。 当Cassandra执行写操作时，Cassandra会先将数据写入Memtables内存表，并且定期刷新到磁盘，写入SSTables，以提高写入性能。</p>
+<p>Key Caches(键缓存)和Row Caches(行缓存)用于缓存经常访问的数据，以提高读性能。 对于小表，可以启用行缓存。但对于数据量较大的表不建议启用行缓存，虽然新版Cassandra已经将这块区域移至堆外内存，但也会引起堆外OOM问题。Cassandra对行缓存也是默认关闭的。键缓存建议全部开启，Cassandra默认也是开启的。</p>
+<h2 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h2><h3 id="Hinted-Handoff-提示移交"><a href="#Hinted-Handoff-提示移交" class="headerlink" title="Hinted Handoff(提示移交)"></a>Hinted Handoff(提示移交)</h3><p>考虑如下场景：一个写请求到达Cassandra，但是负责这部分数据的节点却由于网络、硬件故障或其他原因而不可用。为了保证整个集群在这种情况下的可用性，Cassandra实现了一个称为提示移交(hinted handoff)的机制。可以把一个提示看做是一个小即时贴，上面记录着写请求的内容。如果写操作所属的节点失败了，Cassandra接收到该请求的节点会创建一个提示，包含这样一条备忘信息：”我有一个给节点B的写请求信息。这个请求现在挂起了，等到节点B回来的时候请告知我，那时我会把写请求送交给它。”也就是说，写操作的提示信息将会从节点A移交给节点B。</p>
+<p>提示移交允许Cassandra对于写操作永远可用，降低离线节点恢复服务之后的不一致的时间。之前讨论过一致性级别，0.6版本中引入的一致性级别ANY，这个一致性级别意味着有一个提示移交就可以认为写操作是成功的。也就是说，即使只有一个提示被记录下来，写操作也就可以认为是成功了。</p>
+<p>一些对提示移交的顾虑，在Cassandra社区内部就已经提出过了。起先，这似乎是一个深思熟虑且精巧的设计，可以保证数据库的持久性，并且，因为这种方法已经在很多分布式计算模式中出现过，比如Java消息服务(JMS)，似乎不会有什么问题。在具有持久性的”保障传递”JMS队列中，如果消息无法发送给接收者，JMS会等待一个给定时间，然后重传消息，直到消息被成功接收。但是在实际系统中，不论是对于JMS的可靠传输还是对于Cassandra的提示移交，都存在一个问题：如果节点离线持续一段时间，其他节点上会堆积相当多的提示信息。之后当其他节点发现掉线节点重新在线的时候，请求会如潮水般涌向这个节点，而此时，这个节点本身正处在自己最脆弱的状态(它刚刚从故障中恢复过来，正在努力恢复工作)。</p>
+<p>作为对这个问题的方案，可以完全关闭提示移交，或者加强对集群的健康检查监控，及时发现问题节点并及时恢复，以避免出现大量提示堆积。</p>
+<h3 id="Bloom-Filter-布隆过滤器"><a href="#Bloom-Filter-布隆过滤器" class="headerlink" title="Bloom Filter(布隆过滤器)"></a>Bloom Filter(布隆过滤器)</h3><p>这不是Cassandra独有的特性，ApacheHadoop、GoogleBigtable和Squid缓存服务器也使用了这个算法以提高性能。</p>
+<p><strong>布隆过滤器</strong>是一种提升性能的手段，得名于其发明者Burton Bloom。布隆过滤器是一种用于判断一个元素是否是一个集合成员的快速、但不确定的算法。称其为不确定性方法是因为布隆过滤器可能会得到一个”假阳性”结果，但是它不会得到”假阴性”的结果，也就是说判断为属于不一定确实属于，但判断为不属于则一定不属于。布隆过滤器将数据集里的值映射为一个位数组，并将一个大数据集凝炼为一个摘要字符串。按照定义，摘要字符串会占用远少于原始数据的内存空间。布隆过滤器位于内存之中，这样可以减少查找键值时的磁盘访问，从而改善性能。磁盘访问通常会比内存访问慢很多。所以，布隆过滤器可以看做是一类特殊的缓存。当进行查询时，在访问磁盘之前首先检查布隆过滤器。因为不会有假阴性结果，所以，如果布隆过滤器显示元素不存在就是真的不存在。但如果Bloom Filter显示这个元素在集合之中，那就再去访问磁盘，确认是否存在。</p>
+<p>因为算法比较经典，网上讲解的资源很多，所以具体算法细节自行百度即可。</p>
+<h3 id="Tombstone-墓碑"><a href="#Tombstone-墓碑" class="headerlink" title="Tombstone(墓碑)"></a>Tombstone(墓碑)</h3><p>你可能了解关系型数据库中的”逻辑删除”这个概念。逻辑删除是指，应用并不直接执行SQL的delete语句，而是使用一个update语句，把某列的值变为”已删除”之类的内容。在Cassandra中，有个与此类似的概念，称为墓碑。这就是所有删除操作的做法，区别是它自动为你执行的。当你执行一个删除操作时，数据并不会被立刻删除。它被视为一个更新操作，在相应的字段的值上放一个墓碑。墓碑是一个删除标记，当执行合并SSTable时，比墓碑时间更老的内容都会被真正删除。有一个相关的设置：GarbageCollectionGraceSeconds(垃圾回收时延)。这个时间是服务器对一个墓碑进行垃圾回收之前的等待的时间。这个时间默认是864000秒，也就是10天。Cassandra会一直跟踪墓碑的年龄，一旦某个墓碑的寿命比GCGraceSeconds长了，就会回收。这个时延的设计目的是留下足够长的时间以便于恢复数据，如果一个节点宕机超过这个时间，那么它也会被认为是发生故障了，应该被替换掉。</p>
+<h2 id="读写流程"><a href="#读写流程" class="headerlink" title="读写流程"></a>读写流程</h2><h3 id="写操作"><a href="#写操作" class="headerlink" title="写操作"></a>写操作</h3><p><img src= "/img/loading.gif" data-lazy-src="https://blog-resource.gitee.io/cassandra/Cassandra-%E5%86%99%E5%85%A5%E6%B5%81%E7%A8%8B-%E6%B0%B4%E5%8D%B0.jpg" alt="写操作流程"></p>
+<ol>
+<li><p>将数据写入节点时，首先将其存储到提交日志中，以便在节点发生故障时可以恢复写入。</p>
+</li>
+<li><p>数据的副本写入内存表Memtables中，可以在无需访问磁盘的情况下进行后续读取操作或后续的更新。</p>
+</li>
+<li><p>如果正在使用行缓存，并且缓存中已经存在该行的较旧副本，则该旧副本将被新值替换。</p>
+</li>
+<li><p>Cassandra监视Memtables的大小。如果内存表达到某个阈值大小，Cassandra会将内存表数据写入磁盘的SSTables中。如果不同的写操作在同一行中更新了不同的列，则将产生多个SSTable文件。 Cassandra具有压缩机制，该机制会定期运行以合并SSTables。</p>
+</li>
+<li><p>最后，如果启用了”提示移交(hinted handoff)”功能，并且如果协调器检测到节点在写入过程中已无响应(由于网络问题，过载情况，垃圾收集暂停等)，则丢失的写入操作将作为”提示”存储在协调器上。提示包含未能接受写入的节点的标识符以及要写入的数据。当Gossip协议发现发生故障的节点已恢复重连时，协调器节点将重发先前失败的操作的提示，并从协调器中删除提示。提示数据有过期时间，以防止它们在协调器上累积。监视群集的运行状况非常重要，可以在提示过期之前重新启动或更换已关闭的节点。</p>
+</li>
+</ol>
+<h3 id="写性能"><a href="#写性能" class="headerlink" title="写性能"></a>写性能</h3><p>Cassandra最出色的是写操作性能。 一旦将数据记录到提交日志中，Cassandra就可以完成写操作，其他操作异步进行。 而且性能不会随节点的扩展而降低。下面的示例中，我们向表中写入几条记录，平均写入延迟大约为0.69毫秒。 事实证明，Cassandra在生产规模的集群中每秒可提交多达一百万次写入。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">nodetool tablestats gps </span><br><span class="line"></span><br><span class="line">Total number of tables: 36 </span><br><span class="line">---------------- </span><br><span class="line">Keyspace : gps </span><br><span class="line">            .. </span><br><span class="line">            Write Count: 6 </span><br><span class="line">            Write Latency: 0.06933333333333333 ms</span><br></pre></td></tr></table></figure>
+
+<h3 id="读流程"><a href="#读流程" class="headerlink" title="读流程"></a>读流程</h3><p>Cassandra中的读比写更复杂。 当客户端使用读查询连接到协调器节点时，读操作开始。 像写请求一样，协调器节点使用分区程序确定哪些节点保存数据的副本。 像写一样，读的性能取决于查询所需的一致性。 读一致性是指在将结果视为有效之前需要达成共识的副本数量(参考Cassandra可调一致性的使用及原理)。 如果对结果没有共识，Cassandra将在内部运行”读修复”操作，强制更新Cassandra副本上旧值，然后再将结果返回给客户端。 这是影响性能的一个关键因素。</p>
+<p>对于读操作，Cassandra需要执行几个步骤。</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://blog-resource.gitee.io/cassandra/Cassandra-%E8%AF%BB%E5%8F%96%E6%B5%81%E7%A8%8B-%E6%B0%B4%E5%8D%B0.jpg" alt="读取流程"></p>
+<ol>
+<li><p>查询副本时，首先要查找行缓存(如果启用)。如果所需的数据在行缓存中命中，则可以立即返回。</p>
+</li>
+<li><p>Cassandra将检查键缓存(如果启用)。如果在键缓存中找到了分区键，Cassandra可以使用该键通过读取内存中的压缩偏移量来了解数据的存储位置。</p>
+</li>
+<li><p>接下来，Cassandra将检查该内存表Memtable，以查看是否存在所需的数据。</p>
+</li>
+<li><p>之后，Cassandra从磁盘上的SSTables中获取数据，并将其与Memtable中的数据组合起来，以构建所查询数据的视图。</p>
+</li>
+<li><p>最后，如果启用行缓存，Cassandra会将数据写入在行缓存中(以加快后续对相同数据的读取)，并将结果返回到协调器节点。</p>
+</li>
+</ol>
+<p>这些步骤略有简化。 Cassandra具有其他优化功能，例如上文中提到的布隆过滤器，可通过缩小要搜索的键池来加快分区键查找的过程。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文剖析了Cassandra节点的内部架构，包括JVM内存结构和磁盘结构两部分。JVM部分包括Memtables、Key Caches、Row Caches；磁盘部分包括：Commit Logs、SSTables、Hints。并介绍了Cassandra的几个关键特性：提示移交、布隆过滤器和墓碑机制。最后对Cassandra的读写操作流程进行了分析。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">开发实习生</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://sun-iot.gitee.io/posts/3211502">https://sun-iot.gitee.io/posts/3211502</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://sun-iot.gitee.io" target="_blank">南风意未起</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NoSQL/">NoSQL</a><a class="post-meta__tags" href="/tags/Cassandra/">Cassandra</a></div><div class="post_share"><div class="social-share" data-image="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/899b7c84"><img class="prev-cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Cassandra集群架构及算法剖析</div></div></a></div><div class="next-post pull-right"><a href="/posts/6a089064"><img class="next-cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Cassandra 配置详解</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/6a089064.html" title="Cassandra 配置详解"><img class="cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-21</div><div class="title">Cassandra 配置详解</div></div></a></div><div><a href="/posts/1f96e46c.html" title="Cassandra配置详解（下）"><img class="cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-23</div><div class="title">Cassandra配置详解（下）</div></div></a></div><div><a href="/posts/269f226f.html" title="Cassandra可调一致性的使用及原理"><img class="cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-21</div><div class="title">Cassandra可调一致性的使用及原理</div></div></a></div><div><a href="/posts/4833295b.html" title="Cassandra 存储引擎/写入流程"><img class="cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-21</div><div class="title">Cassandra 存储引擎/写入流程</div></div></a></div><div><a href="/posts/4bff12b4.html" title="【Cassandra】Cassandra性能优化"><img class="cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-18</div><div class="title">【Cassandra】Cassandra性能优化</div></div></a></div><div><a href="/posts/7477afc9.html" title="【Cassandra】Cassandra 负载均衡分析"><img class="cover" data-lazy-src="http://allvectorlogo.com/img/2016/05/cassandra-logo.png" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-09-18</div><div class="title">【Cassandra】Cassandra 负载均衡分析</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra%E5%86%85%E9%83%A8%E6%9E%B6%E6%9E%84"><span class="toc-text">Cassandra内部架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-text">关键特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hinted-Handoff-%E6%8F%90%E7%A4%BA%E7%A7%BB%E4%BA%A4"><span class="toc-text">Hinted Handoff(提示移交)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bloom-Filter-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">Bloom Filter(布隆过滤器)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tombstone-%E5%A2%93%E7%A2%91"><span class="toc-text">Tombstone(墓碑)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E6%B5%81%E7%A8%8B"><span class="toc-text">读写流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E6%93%8D%E4%BD%9C"><span class="toc-text">写操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E6%80%A7%E8%83%BD"><span class="toc-text">写性能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E6%B5%81%E7%A8%8B"><span class="toc-text">读流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '44a0c3d7bcb18a2f70d9',
+      clientSecret: '5c734f6dde56cf430ba76c5fbd383ec552ab25a6',
+      repo: 'hexo-blog-comments',
+      owner: 'sun-iot',
+      admin: ['sun-iot'],
+      id: 'f9ae97bd8050c65330deddcf21c15080',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

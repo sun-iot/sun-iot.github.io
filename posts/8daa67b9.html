@@ -1,0 +1,332 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>大数据计算引擎之Flink简介 | 南风意未起</title><meta name="keywords" content="Flink"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="description" content="Flink简介1.1 Flink的初步认识Apache Flink是为分布式、高性能、随时可用以即准确的流处理应用程序打造的开源处理框架Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据进行有状态计算，Flink被设计在所有常见的集群环境中运行，以内存执行速度和任意规模来执行计算。[外链图片转存失败(img-bWUWJdZh-1567043547838)(en-resourc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大数据计算引擎之Flink简介">
+<meta property="og:url" content="https://sun-iot.gitee.io/posts/8daa67b9">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:description" content="Flink简介1.1 Flink的初步认识Apache Flink是为分布式、高性能、随时可用以即准确的流处理应用程序打造的开源处理框架Apache Flink是一个框架和分布式处理引擎，用于对无界和有界数据进行有状态计算，Flink被设计在所有常见的集群环境中运行，以内存执行速度和任意规模来执行计算。[外链图片转存失败(img-bWUWJdZh-1567043547838)(en-resourc">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://flink.apache.org/img/flink-header-logo.svg">
+<meta property="article:published_time" content="2019-11-05T06:42:14.000Z">
+<meta property="article:modified_time" content="2019-11-05T06:42:14.000Z">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="Flink">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://flink.apache.org/img/flink-header-logo.svg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/posts/8daa67b9"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2019-11-05 14:42:14'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://flink.apache.org/img/flink-header-logo.svg)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">大数据计算引擎之Flink简介</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-11-05T06:42:14.000Z" title="发表于 2019-11-05 14:42:14">2019-11-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2019-11-05T06:42:14.000Z" title="更新于 2019-11-05 14:42:14">2019-11-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Flink/">Flink</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/posts/8daa67b9#post-comment"><span class="gitalk-" id="card-toc"></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="Flink简介"><a href="#Flink简介" class="headerlink" title="Flink简介"></a>Flink简介</h2><h3 id="1-1-Flink的初步认识"><a href="#1-1-Flink的初步认识" class="headerlink" title="1.1 Flink的初步认识"></a>1.1 Flink的初步认识</h3><p><strong>Apache Flink是为分布式、高性能、随时可用以即准确的流处理应用程序打造的开源处理框架</strong><br>Apache Flink是一个框架和分布式处理引擎，<strong>用于对无界和有界数据进行有状态计算</strong>，Flink被设计在所有常见的集群环境中运行，以内存执行速度和任意规模来执行计算。<br>[外链图片转存失败(img-bWUWJdZh-1567043547838)(en-resource://database/1282:1)]<br>Flink的几个模块</p>
+<ul>
+<li><p>Flink Table &amp; SQL</p>
+</li>
+<li><p>Flink Gelly (图计算)</p>
+</li>
+<li><p>Flink CEP (复杂事件处理)</p>
+</li>
+</ul>
+<h3 id="1-2-选择Flink的理由"><a href="#1-2-选择Flink的理由" class="headerlink" title="1.2 选择Flink的理由"></a>1.2 选择Flink的理由</h3><p>在流处理技术中，我们常见的Storm，层风靡一时。他是流处理的先锋，Storm提供了低延时的流处理，但是他为了实时性付出了一些代价：很难实现高吞吐，并且其正确性没能达到通常所需的水平，也就是说不能保证 exactly-once语义。</p>
+<p>在低延时和高吞吐的流处理系统中维护良好的容错性是非常困难的，因此，开发人员提出<strong>将连续事件中的数据分割成一系列微小的批量作业</strong>。几遍分割在小，也无法做到完全的实时，这个就是Spark Streaming的使用方法。使用微批处理方法，可以实现exactly-once语义，从而保障状态的一致性。如果一个微批处理作业失败了，它可以重新运行。这比连续的流处理方法更容易。Storm Trident是对Storm的延伸，它的底层流处理引擎就是基于微批处理方法来进行计算的，从而实现了exactly-once语义，但是在延迟性方面付出了很大的代价。</p>
+<p>通过间歇性的批处理作业来模拟流处理，会导致开发和运维相互交错。完成间歇性的批处理作业所需的时间和数据到达的时间紧密耦合，任何延迟都可能导致不一致(或者说错误)的结果。这种技术的潜在问题是，时间由系统中生成小批量作业的那一部分全权控制。Spark Streaming等一些流处理框架在一定程度上弱化了这一弊端，但还是不能完全避免。另外，使用这种方法的计算有着糟糕的用户体验，尤其是那些对延迟比较敏感的作业，而且人们需要在写业务代码时花费大量精力来提升性能。</p>
+<p>也因此，Flink诞生了。Flink的一个优势是，它拥有诸多重要的流式计算功能。其他项目为了实现这些功能，都不得不付出代价。比如，Storm实现了低延迟，但是做不到高吞吐，也不能在故障发生时准确地处理计算状态; Spark Streaming通过采用微批处理方法实现了高吞吐和容错性，但是牺牲了低延迟和实时处理能力，也不能使窗口与自然时间相匹配，并且表现力欠佳。</p>
+<p>看下面一张图，就是Flink , Spark Streaming , Storm三者之间的区别。</p>
+<p><img src= "/img/loading.gif" data-lazy-src="https://img-blog.csdnimg.cn/20190829095414290.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzMzU2MDgz,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h4 id="Spark-Streaming-VS-Flink"><a href="#Spark-Streaming-VS-Flink" class="headerlink" title="Spark Streaming VS Flink"></a>Spark Streaming VS Flink</h4><p><strong>Micro Batching 模式（Spark）</strong><br>该计算模式认为<strong>流是批的特例</strong>，流计算就是连续不断的批进行持续计算，但是该计算模式在一定程度上可以满足99%的实时计算场景，在该模式的架构实现上有一个自然流数据进入系统进行攒批的过程，这样就增加了延迟。如图所示：<br><img src= "/img/loading.gif" data-lazy-src="https://img-blog.csdnimg.cn/20190829095749628.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzMzU2MDgz,size_16,color_FFFFFF,t_70" alt="sparkstreaming"><br>可以看出，把输入流分割成微小的批次，然后一个批次一个批次的处理，一个批次一个批次的输出。</p>
+<p><strong>Native Streaming 模式（Flink）</strong><br>该计算模式认为<strong>批是流的特例</strong>，其是将每条数据都进行计算，这种计算模式很自然，并且延迟性能更低，如图所示：<br><img src= "/img/loading.gif" data-lazy-src="https://img-blog.csdnimg.cn/20190829095852751.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzMzU2MDgz,size_16,color_FFFFFF,t_70" alt="flink"><br><strong>数据模型</strong><br>Spark最早使用的是RDD模型，这个比MapReduce快了100倍的计算模型有着显著的优势。对Hadoop生态大幅升级换代。RDD弹性数据集是分割为固定大小的批数据。<br>Spark Streaming里的DStream和RDD模型类似，把一个实时进来的无线数据分割为一个小批数据集合DStream，定时器定时通知系统去处理这些微批数据。然而，API少，无法胜任复杂的流计算业务，调大吞吐量而不触发背压是个体力活，不支持乱序处理。</p>
+<p>Flink的基本数据模型是数据流，及事件（Event）的序列。数据流作为数据的基本模型可能没有表或者数据块的直观熟悉，但是可以证明是完全等效的。流可以是无边界的无限流，即所谓的流处理。可以说，有边界的有限流，这样就是批处理。<br>Flink采用Dataflow模型，和Lambda模式不同。Dataflow是纯粹的节点组成的一个图，图中的节点可以执行流计算、批计算、机器学习算法，流数据在节点间流动，被节点上的处理函数实时apply处理，节点间使用Netty连接起来的。两个Netty间Keepalive，网络Buffer是自然反压的关键。经过逻辑优化和物理优化，Dadaflow的逻辑关系和运行的物理拓扑相差不大。<strong>这种纯粹的流式设计，时延和吞吐理论山是最优的</strong>。<br><img src= "/img/loading.gif" data-lazy-src="https://img-blog.csdnimg.cn/20190829095539191.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzMzU2MDgz,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h4 id="运行时架构"><a href="#运行时架构" class="headerlink" title="运行时架构"></a>运行时架构</h4><p><strong>Spark运行时架构</strong><br>批计算是把DAG划分为不同stage，DAG节点之间有血缘关系，在运行期间一个stage的task任务列表执行完毕，销毁再去执行下一个stage；Spark Streaming则是对持续流入的数据划分一个批次，定时去执行批次的数据运算。Structured Streaming将无限输入流保存在状态存储中，对流数据做微批或实时的计算，跟Dataflow模型比较像。<br><strong>Flink运行时架构</strong><br>Flink有统一的runtime，在此之上可以是Batch API、Stream API、ML、Graph、CEP等，DAG中的节点上执行上述模块的功能函数，DAG会一步步转化成ExecutionGraph，即物理可执行的图，最终交给调度系统。节点中的逻辑在资源池中的task上被apply执行，task和Spark中的task类似，都对应线程池中的一个线程。</p>
+<p>在DAG的执行上，Spark和Flink有一个比较显著的区别。在Flink的流执行模式中，一个事件在一个节点处理完后的输出就可以发到下一个节点立即处理。这样执行引擎并不会引入额外的延迟。与之相应的，所有节点是需要同时运行的。而Spark的micro batch和一般的batch执行一样，处理完上游的stage得到输出之后才开始下游的stage。</p>
+<p>在流计算的运行时架构方面，Flink明显更为统一且优雅一些。</p>
+<h3 id="1-3-Flink的重要特点"><a href="#1-3-Flink的重要特点" class="headerlink" title="1.3 Flink的重要特点"></a>1.3 Flink的重要特点</h3><h4 id="1-3-1-事件驱动型（Event-Driver）"><a href="#1-3-1-事件驱动型（Event-Driver）" class="headerlink" title="1.3.1 事件驱动型（Event-Driver）"></a>1.3.1 事件驱动型（Event-Driver）</h4><p><strong>事件驱动型</strong>是一类具有状态的应用，他从一个或多个事件流提取数据，并根据到来的事件除法计算、状态更新或其他外部动作。比较典型就是Kafka为代表的的消息对列几乎是事件驱动型应用。<br>与之不同的是Spark Streaming微批次，如图：<br><img src= "/img/loading.gif" data-lazy-src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jb25mdWNpYW56dW95dWFuLmdpdGh1Yi5pby9mbGluay10dXRvcmlhbC9pbWFnZXMvc3RyZWFtaW5nLWZsb3cucG5n?x-oss-process=image/format,png"><br>而事件驱动型，如图所示：<br><img src= "/img/loading.gif" data-lazy-src="https://img-blog.csdnimg.cn/20190829095627632.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzMzU2MDgz,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h4 id="1-3-2-流与批的两种世界观"><a href="#1-3-2-流与批的两种世界观" class="headerlink" title="1.3.2 流与批的两种世界观"></a>1.3.2 流与批的两种世界观</h4><p><strong>批处理</strong>的特点是有界、持久、大量，非常适合需要访问全套记录才能完成的计算工作，一般用于离线统计。</p>
+<p><strong>流处理</strong>的特点是无界、实时，无需针对整个数据集执行操作，而是对通过系统传输的每个数据项执行操作，一般用于实时统计。</p>
+<p>在Spark的世界观中，一切都是由批次组成的，离线数据是一个大批次，而实时数据是由一个一个无限的小批次组成的。</p>
+<p>而在Flink的世界观中，一切都是由流组成的，离线数据是有界限的流，实时数据是一个没有界限的流，这就是所谓的有界流和无界流。</p>
+<p><strong>无界数据流</strong>：无界数据流有一个开始但是没有结束，它们不会在生成时终止并提供数据，必须连续处理无界流，也就是说必须在获取后立即处理event。对于无界数据流我们无法等待所有数据都到达，因为输入是无界的，并且在任何时间点都不会完成。处理无界数据通常要求以特定顺序(例如事件发生的顺序)获取event，以便能够推断结果完整性。</p>
+<p><strong>有界数据流</strong>：有界数据流有明确定义的开始和结束，可以在执行任何计算之前通过获取所有数据来处理有界流，处理有界流不需要有序获取，因为可以始终对有界数据集进行排序，有界流的处理也称为批处理。<br><strong>这种以流为世界观的架构，获得最大好处就是具有极低的延迟</strong></p>
+<h4 id="1-3-3-分层API"><a href="#1-3-3-分层API" class="headerlink" title="1.3.3 分层API"></a>1.3.3 分层API</h4><p><img src= "/img/loading.gif" data-lazy-src="https://img-blog.csdnimg.cn/20190829095657743.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMzMzU2MDgz,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><strong>Flink目前作为批处理还不是主流，不如Spark成熟，因此DataSet使用不是很多，Flink Table API和Flink SQL也并不完善。Flink作为最接近Google DataFlow模型的实现，是流批统一的观点，因此使用DataStream</strong></p>
+<h2 id="有状态的流式处理简介"><a href="#有状态的流式处理简介" class="headerlink" title="有状态的流式处理简介"></a>有状态的流式处理简介</h2><p>Apache Flink是一个分布式流处理器，具有直观和富有表现力的API，可实现有状态的流处理应用程序。它以容错的方式有效地大规模运行这些应用程序。</p>
+<h3 id="2-1-传统数据处理架构"><a href="#2-1-传统数据处理架构" class="headerlink" title="2.1 传统数据处理架构"></a>2.1 传统数据处理架构</h3><p>两种数据处理类型：事务处理（OLTP）和分析处理（OLAP）</p>
+<h4 id="2-1-1-事务处理"><a href="#2-1-1-事务处理" class="headerlink" title="2.1.1 事务处理"></a>2.1.1 事务处理</h4><p>公司系统通常设计有单独的层，用于数据处理（应用程序本身）和数据存储（事务数据库系统）。应用程序通常连接到外部服务或直接面向用户，并持续处理传入的事件。处理事件时，应用程序会读取数据库的状态，或者通过运行事务来更新它。</p>
+<h4 id="2-1-2-分析处理"><a href="#2-1-2-分析处理" class="headerlink" title="2.1.2 分析处理"></a>2.1.2 分析处理</h4><p>一般不会直接在事务数据库上运行分析查询，而是复制数据到数据仓库。数据仓库是对工作负载进行分析和查询的专用数据存储。为了填充数据仓库，需要将事务数据库系统管理的数据复制过来。将数据复制到数据仓库的过程称为extract-transform-load（ETL）。 ETL过程从事务数据库中提取数据，将其转换为某种通用的结构表示，可能包括验证，值的规范化，编码，重复数据删除（去重）和模式转换，最后将其加载到分析数据库中。 ETL过程可能非常复杂，并且通常需要技术复杂的解决方案来满足性能要求。 ETL过程需要定期运行以保持数据仓库中的数据同步。</p>
+<p>将数据导入数据仓库后，可以查询和分析数据。通常，在数据仓库上执行两类查询。第一种类型是定期报告查询，用于计算与业务相关的统计信息，比如收入、用户增长或者输出的产量。这些指标汇总到报告中，帮助管理层评估业务的整体健康状况。第二种类型是即席查询，旨在提供特定问题的答案并支持关键业务决策，例如收集统计在投放商业广告上的花费，和获取的相应收入，以评估营销活动的有效性。两种查询由批处理方式由数据仓库执行，<br><img src= "/img/loading.gif" data-lazy-src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jb25mdWNpYW56dW95dWFuLmdpdGh1Yi5pby9mbGluay10dXRvcmlhbC9pbWFnZXMvc3BhZl8wMTAzLnBuZw?x-oss-process=image/format,png" alt="format"></p>
+<h3 id="2-2-有状态的流式处理"><a href="#2-2-有状态的流式处理" class="headerlink" title="2.2 有状态的流式处理"></a>2.2 有状态的流式处理</h3><p>如果我们想要无限处理事件流，并且不愿意繁琐地每收到一个事件就记录一次，那这样的应用程序就需要是有状态的，也就是说能够存储和访问中间数据。当应用程序收到一个新事件时，它可以从状态中读取数据，或者向该状态写入数据，总之可以执行任何计算。原则上讲，我们可以在各种不同的地方存储和访问状态，包括程序变量（内存）、本地文件，还有嵌入式或外部数据库。</p>
+<p>Apache Flink将应用程序状态，存储在内存或者嵌入式数据库中。由于Flink是一个分布式系统，因此需要保护本地状态以防止在应用程序或计算机故障时数据丢失。 Flink通过定期将应用程序状态的一致性检查点（check point）写入远程且持久的存储，来保证这一点。状态、状态一致性和Flink的检查点将在后面的章节中更详细地讨论，但是，现在，图1-4显示了有状态的流式Flink应用程序。<br><img src= "/img/loading.gif" data-lazy-src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jb25mdWNpYW56dW95dWFuLmdpdGh1Yi5pby9mbGluay10dXRvcmlhbC9pbWFnZXMvc3BhZl8wMTA0LnBuZw?x-oss-process=image/format,png" alt="state-flink"><br>有状态的流处理应用程序，通常从事件日志中提取输入事件。事件日志就用来存储和分发事件流。事件被写入持久的仅添加（append-only）日志，这意味着无法更改写入事件的顺序。写入事件日志的流，可以被相同或不同的消费者多次读取。由于日志的仅附加（append-only）属性，事件始终以完全相同的顺序发布给所有消费者。现在已有几种事件日志系统，其中Apache Kafka是最受欢迎的，可以作为开源软件使用，或者是云计算提供商提供的集成服务。</p>
+<p>在Flink上运行的有状态的流处理应用程序，是很有意思的一件事。在这个架构中，事件日志会按顺序保留输入事件，并且可以按确定的顺序重播它们。如果发生故障，Flink将从先前的检查点（check point）恢复其状态，并重置事件日志上的读取位置，这样就可以恢复整个应用。应用程序将重放（并快进）事件日志中的输入事件，直到它到达流的尾部。此技术一般用于从故障中恢复，但也可用于更新应用程序、修复bug或者修复以前发出的结果，另外还可以用于将应用程序迁移到其他群集，或使用不同的应用程序版本执行A / B测试。</p>
+<p>如前所述，有状态的流处理是一种通用且灵活的设计架构，可用于许多不同的场景。在下文中，我们提出了三类通常使用有状态流处理实现的应用程序：（1）事件驱动应用程序，（2）数据管道应用程序，以及（3）数据分析应用程序。</p>
+<p>我们将应用程序分类描述，是为了强调有状态流处理适用于多种业务场景；而实际的应用中，往往会具有以上多种情况的特征。</p>
+<h4 id="2-2-1-事件驱动应用程序（Event-Driven-Applications）"><a href="#2-2-1-事件驱动应用程序（Event-Driven-Applications）" class="headerlink" title="2.2.1 事件驱动应用程序（Event-Driven Applications）"></a>2.2.1 事件驱动应用程序（Event-Driven Applications）</h4><p>事件驱动的应用程序是由状态的流应用程序，使用特定的业务逻辑来提取事件流并处理事件。</p>
+<h4 id="2-2-2-数据管道（Data-Pipelines）"><a href="#2-2-2-数据管道（Data-Pipelines）" class="headerlink" title="2.2.2 数据管道（Data Pipelines）"></a>2.2.2 数据管道（Data Pipelines）</h4><p>以较低的延迟，来提取、转换和插入数据是有状态流处理应用程序的另一个常见应用场景。这种类型的应用程序称为数据管道（data pipeline）。数据管道必须能够在短时间内处理大量数据。操作数据管道的流处理器还应具有许多源（source）和接收器（sink）的连接器，以便从各种存储系统读取数据并将数据写入各种存储系统。当然，同样地，Flink完成了所有这些功能</p>
+<h4 id="2-2-3-流分析"><a href="#2-2-3-流分析" class="headerlink" title="2.2.3 流分析"></a>2.2.3 流分析</h4><p>ETL作业定期将数据导入数据存储区，数据的处理是由即席查询（用户自定义查询）或设定好的通常查询来做的。无论架构是基于数据仓库还是基于Hadoop生态系统的组件，这都是批处理。多年来最好的处理方式就是，定期将数据加载到数据分析系统中，但它给分析管道带了的延迟相当大，而且无法避免。</p>
+<p>流式分析应用程序不是等待定期触发，而是连续地提取事件流，并且通过纳入最新事件来更新其计算结果，这个过程是低延迟的。这有些类似于数据库中用于更新视图（views）的技术。通常，流应用程序将其结果存储在支持更新的外部数据存储中，例如数据库或键值（key-value）存储。流分析应用程序的实时更新结果可用于驱动监控仪表板（dashboard）应用程序。</p>
+<p>流分析应用程序最大的优势就是，将每个事件纳入到分析结果所需的时间短得多。除此之外，流分析应用程序还有另一个不太明显的优势。传统的分析管道由几个独立的组件组成，例如ETL过程、存储系统、对于基于Hadoop的环境，还包括用于触发任务（jobs）的数据处理和调度程序。相比之下，如果我们运行一个有状态流应用程序，那么流处理器就会负责所有这些处理步骤，包括事件提取、带有状态维护的连续计算以及更新结果。此外，流处理器可以从故障中恢复，并且具有精确一次（exactly-once）的状态一致性保证，还可以调整应用程序的计算资源。像Flink这样的流处理器还支持事件时间（event-time）处理，这可以保证产生正确和确定的结果，并且能够在很短的时间内处理大量数据。</p>
+<h2 id="Flink简介总结"><a href="#Flink简介总结" class="headerlink" title="Flink简介总结"></a>Flink简介总结</h2><p>Apache Flink是第三代分布式流处理器，它拥有极富竞争力的功能。它提供准确的大规模流处理，具有高吞吐量和低延迟。特别的是，以下功能使Flink脱颖而出：</p>
+<ul>
+<li><p>事件时间（event-time）和处理时间（processing-tme）语义。即使对于无序事件流，事件时间（event-time）语义仍然能提供一致且准确的结果。而处理时间（processing-time）语义可用于具有极低延迟要求的应用程序。</p>
+</li>
+<li><p>精确一次（exactly-once）的状态一致性保证。</p>
+</li>
+<li><p>每秒处理数百万个事件，毫秒级延迟。 Flink应用程序可以扩展为在数千个核（cores）上运行。</p>
+</li>
+<li><p>分层API，具有不同的权衡表现力和易用性。本书介绍了DataStream API和过程函数（process function），为常见的流处理操作提供原语，如窗口和异步操作，以及精确控制状态和时间的接口。本书不讨论Flink的关系API，SQL和LINQ风格的Table API。</p>
+</li>
+<li><p>连接到最常用的存储系统，如Apache Kafka，Apache Cassandra，Elasticsearch，JDBC，Kinesis和（分布式）文件系统，如HDFS和S3。</p>
+</li>
+<li><p>由于其高可用的设置（无单点故障），以及与Kubernetes，YARN和Apache Mesos的紧密集成，再加上从故障中快速恢复和动态扩展任务的能力，Flink能够以极少的停机时间 7 * 24全天候运行流应用程序。</p>
+</li>
+<li><p>能够更新应用程序代码并将作业（jobs）迁移到不同的Flink集群，而不会丢失应用程序的状态。</p>
+</li>
+<li><p>详细且可自定义的系统和应用程序指标集合，以提前识别问题并对其做出反应。</p>
+</li>
+<li><p>最后但同样重要的是，Flink也是一个成熟的批处理器。</p>
+</li>
+</ul>
+<p>除了这些功能之外，Flink还是一个非常易于开发的框架，因为它易于使用的API。嵌入式执行模式，可以在单个JVM进程中启动应用程序和整个Flink系统，这种模式一般用于在IDE中运行和调试Flink作业。在开发和测试Flink应用程序时，此功能非常有用。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">开发实习生</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://sun-iot.gitee.io/posts/8daa67b9">https://sun-iot.gitee.io/posts/8daa67b9</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://sun-iot.gitee.io" target="_blank">南风意未起</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Flink/">Flink</a></div><div class="post_share"><div class="social-share" data-image="https://flink.apache.org/img/flink-header-logo.svg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/885ab957"><img class="prev-cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">大数据计算引擎之Flink流处理基础</div></div></a></div><div class="next-post pull-right"><a href="/posts/e42bc83e"><img class="next-cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">大数据存储框架之HBase(1) 概述</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/39c50c8f.html" title="大数据计算引擎之Flink获取Phoenix报OOM错误"><img class="cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-02</div><div class="title">大数据计算引擎之Flink获取Phoenix报OOM错误</div></div></a></div><div><a href="/posts/5dfad7dd.html" title="Trouble Shooting For FlinkSql(2)SqlParserException"><img class="cover" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-09</div><div class="title">Trouble Shooting For FlinkSql(2)SqlParserException</div></div></a></div><div><a href="/posts/c5f729a.html" title="【大数据实时框架 Flink】 22 | Flink Checkpointing 监控与优化&&内存优化"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2020-01-06</div><div class="title">【大数据实时框架 Flink】 22 | Flink Checkpointing 监控与优化&&内存优化</div></div></a></div><div><a href="/posts/6e31bc0.html" title="聊聊Flink中自定义的DataSink的那些事(1)JDBCInputFormat篇"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-04</div><div class="title">聊聊Flink中自定义的DataSink的那些事(1)JDBCInputFormat篇</div></div></a></div><div><a href="/posts/5aabf7ac.html" title="聊聊Flink中自定义的OutputFormat的那些事(1)ElastaticsearchOutFormat篇"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-12-05</div><div class="title">聊聊Flink中自定义的OutputFormat的那些事(1)ElastaticsearchOutFormat篇</div></div></a></div><div><a href="/posts/7e766d4f.html" title="大数据计算引擎之Flink SQL"><img class="cover" data-lazy-src="https://flink.apache.org/img/flink-header-logo.svg" alt="cover"><div class="content is-center"><div class="date"><i class="fas fa-history fa-fw"></i> 2019-11-05</div><div class="title">大数据计算引擎之Flink SQL</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="card-content"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Flink%E7%AE%80%E4%BB%8B"><span class="toc-text">Flink简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Flink%E7%9A%84%E5%88%9D%E6%AD%A5%E8%AE%A4%E8%AF%86"><span class="toc-text">1.1 Flink的初步认识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E9%80%89%E6%8B%A9Flink%E7%9A%84%E7%90%86%E7%94%B1"><span class="toc-text">1.2 选择Flink的理由</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Spark-Streaming-VS-Flink"><span class="toc-text">Spark Streaming VS Flink</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9E%B6%E6%9E%84"><span class="toc-text">运行时架构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Flink%E7%9A%84%E9%87%8D%E8%A6%81%E7%89%B9%E7%82%B9"><span class="toc-text">1.3 Flink的重要特点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-1-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E5%9E%8B%EF%BC%88Event-Driver%EF%BC%89"><span class="toc-text">1.3.1 事件驱动型（Event-Driver）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-2-%E6%B5%81%E4%B8%8E%E6%89%B9%E7%9A%84%E4%B8%A4%E7%A7%8D%E4%B8%96%E7%95%8C%E8%A7%82"><span class="toc-text">1.3.2 流与批的两种世界观</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-3-%E5%88%86%E5%B1%82API"><span class="toc-text">1.3.3 分层API</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%89%E7%8A%B6%E6%80%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%A4%84%E7%90%86%E7%AE%80%E4%BB%8B"><span class="toc-text">有状态的流式处理简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%BC%A0%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%9E%B6%E6%9E%84"><span class="toc-text">2.1 传统数据处理架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-%E4%BA%8B%E5%8A%A1%E5%A4%84%E7%90%86"><span class="toc-text">2.1.1 事务处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-%E5%88%86%E6%9E%90%E5%A4%84%E7%90%86"><span class="toc-text">2.1.2 分析处理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%9C%89%E7%8A%B6%E6%80%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%A4%84%E7%90%86"><span class="toc-text">2.2 有状态的流式处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%EF%BC%88Event-Driven-Applications%EF%BC%89"><span class="toc-text">2.2.1 事件驱动应用程序（Event-Driven Applications）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E6%95%B0%E6%8D%AE%E7%AE%A1%E9%81%93%EF%BC%88Data-Pipelines%EF%BC%89"><span class="toc-text">2.2.2 数据管道（Data Pipelines）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E6%B5%81%E5%88%86%E6%9E%90"><span class="toc-text">2.2.3 流分析</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Flink%E7%AE%80%E4%BB%8B%E6%80%BB%E7%BB%93"><span class="toc-text">Flink简介总结</span></a></li></ol></div></div></div><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk({
+      clientID: '44a0c3d7bcb18a2f70d9',
+      clientSecret: '5c734f6dde56cf430ba76c5fbd383ec552ab25a6',
+      repo: 'hexo-blog-comments',
+      owner: 'sun-iot',
+      admin: ['sun-iot'],
+      id: 'f623e6d8874b7d99d1feb3a5d95c652d',
+      language: 'zh-CN',
+      perPage: 10,
+      distractionFreeMode: false,
+      pagerDirection: 'last',
+      createIssueManually: true,
+      updateCountCallback: commentCount
+    })
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

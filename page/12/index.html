@@ -1,0 +1,313 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>南风意未起 - 开发实习生</title><meta name="keywords" content="Flink,Spark,Java学习笔记,Go学习笔记,Python学习笔记"><meta name="author" content="开发实习生"><meta name="copyright" content="开发实习生"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta property="og:type" content="website">
+<meta property="og:title" content="南风意未起">
+<meta property="og:url" content="https://sun-iot.gitee.io/page/12/">
+<meta property="og:site_name" content="南风意未起">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://sun-iot.gitee.io/null">
+<meta property="article:author" content="开发实习生">
+<meta property="article:tag" content="Flink,Spark,Java学习笔记,Go学习笔记,Python学习笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://sun-iot.gitee.io/null"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://sun-iot.gitee.io/page/12/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//pingjs.qq.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?df2b8e2d013493b46e55c329051981c8";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=UA-161842973-1"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-161842973-1');
+</script><script>var _mtac = {};
+(function() {
+    var mta = document.createElement("script");
+    mta.src = "//pingjs.qq.com/h5/stats.js?v2.0.4";
+    mta.setAttribute("name", "MTAH5");
+    mta.setAttribute("sid", "500729338");
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(mta, s);
+})();
+</script><script async="async" data-pjax="data-pjax" src="https://s4.cnzz.com/z_stat.php?id=1278773901&amp;web_id=1278773901"></script><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+};
+
+var saveToLocal = {
+  set: function setWithExpiry(key, value, ttl) {
+    const now = new Date()
+    const expiryDay = ttl * 86400000
+    const item = {
+      value: value,
+      expiry: now.getTime() + expiryDay,
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+  },
+
+  get: function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+
+    if (!itemStr) {
+      return undefined
+    }
+    const item = JSON.parse(itemStr)
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      localStorage.removeItem(key)
+      return undefined
+    }
+    return item.value
+  }
+}
+
+// https://stackoverflow.com/questions/16839698/jquery-getscript-alternative-in-native-javascript
+const getScript = url => new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.src = url
+  script.async = true
+  script.onerror = reject
+  script.onload = script.onreadystatechange = function() {
+    const loadState = this.readyState
+    if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+    script.onload = script.onreadystatechange = null
+    resolve()
+  }
+  document.head.appendChild(script)
+})</script><script id="config_change">var GLOBAL_CONFIG_SITE = { 
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: true,
+  isToc: false,
+  postUpdate: '2020-12-23 14:22:10'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(function () {  window.activateDarkMode = function () {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+    }
+  }
+  window.activateLightMode = function () {
+    document.documentElement.setAttribute('data-theme', 'light')
+   if (document.querySelector('meta[name="theme-color"]') !== null) {
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+    }
+  }
+  const autoChangeMode = 'false'
+  const t = saveToLocal.get('theme')
+  if (autoChangeMode === '1') {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+    const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+    const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+    if (t === undefined) {
+      if (isLightMode) activateLightMode()
+      else if (isDarkMode) activateDarkMode()
+      else if (isNotSpecified || hasNoSupport) {
+        const now = new Date()
+        const hour = now.getHours()
+        const isNight = hour <= 6 || hour >= 18
+        isNight ? activateDarkMode() : activateLightMode()
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+        if (saveToLocal.get('theme') === undefined) {
+          e.matches ? activateDarkMode() : activateLightMode()
+        }
+      })
+    } else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else if (autoChangeMode === '2') {
+    const now = new Date()
+    const hour = now.getHours()
+    const isNight = hour <= 6 || hour >= 18
+    if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+    else if (t === 'light') activateLightMode()
+    else activateDarkMode()
+  } else {
+    if (t === 'dark') activateDarkMode()
+    else if (t === 'light') activateLightMode()
+  }const asideStatus = saveToLocal.get('aside-status')
+if (asideStatus !== undefined) {
+   if (asideStatus === 'hide') {
+     document.documentElement.classList.add('hide-aside')
+   } else {
+     document.documentElement.classList.remove('hide-aside')
+   }
+}})()</script><meta name="generator" content="Hexo 5.2.0"><link rel="alternate" href="/atom.xml" title="南风意未起" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/null" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div id="body-wrap"><header class="full_page" id="page-header" style="background-image: url(https://cn.bing.com/th?id=OHR.BeardedReedling_ZH-CN7714158275_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp)"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">南风意未起</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/far%20fa-newspaper"><span> 文章归属 /categories/</span></a></li><li><a class="site-page" href="/fas%20fa-code"><span> 编码人生 /编码人生/</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/video/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/photo/"><i class="fa-fw fas fa-photo-video"></i><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">南风意未起</h1><div id="site-subtitle"><span id="subtitle"></span></div><div id="site_social_icons"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="post_cover left_radius"><a href="/posts/6d5668f8" title="【Go】内建容器">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【Go】内建容器"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/6d5668f8" title="【Go】内建容器">【Go】内建容器</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-05-21T01:13:23.000Z" title="发表于 2020-05-21 09:13:23">2020-05-21</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-05-21T01:13:23.000Z" title="更新于 2020-05-21 09:13:23">2020-05-21</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Go/">Go</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Go/">Go</a></span></div><div class="content">那时候车马慢一生只够爱一人—— 《醉千年》
+
+数组定义12345678910111213141516// 直接定义一个空的数组	var arr1 [5]int	fmt.Println(&quot;arr1 = &quot; , arr1)// 数组的基本赋值方式之一	arr2 := [3]int&#123;2,4,5&#125;	fmt.Println(&quot;arr2 = &quot; , arr2)// 切片的方式	arr3 := [...]int&#123;1,2,3,4,5,6,7,8,9&#125;	fmt.Println(&quot;arr3&quot; , arr3)// 4 行 5 列	var grid [4][5]int	fmt.Println(&quot;arr4 = &quot; , grid)// 数组的遍历	for i , v := range arr3&#123;		fmt.Printf(&quot; i = %d , v = %d \n&quot;, i, v)	&#125;
+
+Note:
+1234567891011func printArray(ar ...</div></div></div><div class="recent-post-item"><div class="post_cover right_radius"><a href="/posts/5ac81ba" title="【Go】 闭包 &amp; Defer &amp; Error">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【Go】 闭包 &amp; Defer &amp; Error"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/5ac81ba" title="【Go】 闭包 &amp; Defer &amp; Error">【Go】 闭包 &amp; Defer &amp; Error</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-05-19T06:46:16.000Z" title="发表于 2020-05-19 14:46:16">2020-05-19</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-05-19T06:46:16.000Z" title="更新于 2020-05-19 14:46:16">2020-05-19</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Go/">Go</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Go/">Go</a></span></div><div class="content">闭包 / Defer / Error
+
+闭包介绍基本介绍: 闭包就是一个函数和与其相关的引用环境组成的一个整体（实体）
+案例演示123456789101112131415// 闭包的测试func AddUpper() func( int ) int &#123;	var n int = 10 ;	return func(i int) int &#123;		n = n + i		return n	&#125;&#125;func main() &#123;	// 闭包的测试	addUpper := function.AddUpper()	fmt.Println(addUpper(1))	fmt.Println(addUpper(2))&#125;
+
+说明
+AddUpper() 是一个函数，返回的数据类型是 func(int) int .
+闭包的说明: 返回的是一个函数，入演示中的匿名函数，但是这个匿名函数引用到了函数外的资源 n , 因此，匿名函数和 n 形成一个整体，从而构成一个闭包。
+可以这么理解: 闭包是一个类，这个函数是方法， n 是变量。 
+当我们反复调用 addUpper  ...</div></div></div><div class="recent-post-item"><div class="post_cover left_radius"><a href="/posts/19b38673" title="Prometheus可视化利器 Grafana">     <img class="post_bg" data-lazy-src="https://ask.qcloudimg.com/http-save/yehe-1000017/jwr8q70xy0.jpeg?imageView2/2/w/1620" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Prometheus可视化利器 Grafana"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/19b38673" title="Prometheus可视化利器 Grafana">Prometheus可视化利器 Grafana</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-05-08T09:22:07.000Z" title="发表于 2020-05-08 17:22:07">2020-05-08</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-05-08T09:22:07.000Z" title="更新于 2020-05-08 17:22:07">2020-05-08</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Prometheus/">Prometheus</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Prometheus/">Prometheus</a><span class="article-meta__link">•</span><a class="article-meta__tags" href="/tags/Grafana/">Grafana</a></span></div><div class="content">Grafana 其实是没什么好讲的，这里记录下也是因为这个星期在做这个Grafana的多租户设置以及Grafana 服务器的分发，所以也就简单的记录下。
+
+
+基本概念在Grafana 里面的基础的概念说多不多，说少不少。这里也不准备全部介绍，就简单的讲一下，笔者在使用的过程中所用到的几个功能模块。
+Data Source数据源，这是我们的Grafana 的一个很重要的东西，Grafana 本身只是一个页面的UI，并不能真的去存储数据。这里额数据源可以理解为我们的源数据，但是其实这里的数据源其实是一个中间结构，相当于一个连接池。简单的画一个图:图中的虚线，其实就是我们感觉到的数据的走向。但是这个数据的走向其实是先经过了 DataSource , 在到 Prometheus 的。 这几天我跟踪了下后台的请求，我个人的理解是这样的。
+当我们创建一个数据源的时候，其实是在后台帮我们创建一个数据源的配置，然后查询的时候，他查询的路径是: /api/datasources/proxy/13/api/v1/ , 这个路径其实就是我们的数据源里面的一个请求路径，这里的 13 是我们的数据源的 id , ...</div></div></div><div class="recent-post-item"><div class="post_cover right_radius"><a href="/posts/79a774b1" title="Kubernetes 调度器和调度算法">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kubernetes 调度器和调度算法"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/79a774b1" title="Kubernetes 调度器和调度算法">Kubernetes 调度器和调度算法</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-26T03:16:17.000Z" title="发表于 2020-04-26 11:16:17">2020-04-26</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-26T03:16:17.000Z" title="更新于 2020-04-26 11:16:17">2020-04-26</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Kubernetes/">Kubernetes</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Kubernetes/">Kubernetes</a></span></div><div class="content">简介Scheduler 是 kubernetes 的调度器，主要的任务是把定义的 pod 分配到集群的节点上。听起来非常简单，但有很多要考虑的问题：
+
+公平：如何保证每个节点都能被分配资源
+资源高效利用：集群所有资源最大化被使用
+效率：调度的性能要好，能够尽快地对大批量的 pod 完成调度工作
+灵活：允许用户根据自己的需求控制调度的逻辑
+
+
+
+Sheduler 是作为单独的程序运行的，启动之后会一直坚挺 API Server，获取 PodSpec.NodeName 为空的 pod，对每个 pod 都会创建一个 binding，表明该 pod 应该放到哪个节点上
+调度过程调度分为几个部分：首先是过滤掉不满足条件的节点，这个过程称为 predicate；然后对通过的节点按照优先级排序，这个是 priority；最后从中选择优先级最高的节点。如果中间任何一步骤有错误，就直接返回错误
+Predicate 有一系列的算法可以使用： 
+
+PodFitsResources：节点上剩余的资源是否大于 pod 请求的资源
+PodFitsHost：如果 pod 指定了 NodeName，检查节点名称是否和 ...</div></div></div><div class="recent-post-item"><div class="post_cover left_radius"><a href="/posts/72ad8b81" title="Kubernetes集群: Ingress">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kubernetes集群: Ingress"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/72ad8b81" title="Kubernetes集群: Ingress">Kubernetes集群: Ingress</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-26T03:00:16.000Z" title="发表于 2020-04-26 11:00:16">2020-04-26</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-26T03:00:16.000Z" title="更新于 2020-04-26 11:00:16">2020-04-26</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Kubernetes/">Kubernetes</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Kubernetes/">Kubernetes</a></span></div><div class="content">通常情况下，service 和 pod 的 IP 仅可在集群内部访问。集群外部的请求需要通过负载均衡转发到 service 在 Node 上暴露的 NodePort 上，然后再由 kube-proxy 通过边缘路由器 (edge router) 将其转发给相关的 Pod 或者丢弃。而 Ingress 就是为进入集群的请求提供路由规则的集合
+
+Ingress 可以给 service 提供集群外部访问的 URL、负载均衡、SSL 终止、HTTP 路由等。为了配置这些 Ingress 规则，集群管理员需要部署一个 Ingress controller，它监听 Ingress 和 service 的变化，并根据规则配置负载均衡并提供访问入口。
+资料信息Ingress-Nginx github 地址
+Ingress-Nginx 官方网站
+
+
+
+
+部署 Ingress-Nginx12kubectl  apply -f mandatory.yamlkubectl  apply -f service-nodeport.yaml
+
+Ingress HTTP 代理访问deployment、Service、 ...</div></div></div><div class="recent-post-item"><div class="post_cover right_radius"><a href="/posts/4baa6903" title="Kubernetes 集群: Service">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kubernetes 集群: Service"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/4baa6903" title="Kubernetes 集群: Service">Kubernetes 集群: Service</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-26T03:00:08.000Z" title="发表于 2020-04-26 11:00:08">2020-04-26</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-26T03:00:08.000Z" title="更新于 2020-04-26 11:00:08">2020-04-26</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Kubernetes/">Kubernetes</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Kubernetes/">Kubernetes</a></span></div><div class="content">Service 的概念Kubernetes Service 定义了这样一种抽象：一个 Pod 的逻辑分组，一种可以访问它们的策略 —— 通常称为微服务。 这一组 Pod 能够被 Service 访问到，通常是通过 Label Selector 
+
+
+
+Service能够提供负载均衡的能力，但是在使用上有以下限制：
+
+只提供 4 层负载均衡能力，而没有 7 层功能，但有时我们可能需要更多的匹配规则来转发请求，这点上 4 层负载均衡是不支持的
+
+Service 的类型Service 在 K8s 中有以下四种类型
+ClusterIp：默认类型，自动分配一个仅 Cluster 内部可以访问的虚拟 IP
+NodePort：在 ClusterIP 基础上为 Service 在每台机器上绑定一个端口，这样就可以通过 : NodePort 来访问该服务
+LoadBalancer：在 NodePort 的基础上，借助 cloud provider 创建一个外部负载均衡器，并将请求转发到: NodePort
+ExternalName：把集群外部的服务引入到集群内部来，在集群内部直接使用。没有任何类型代理被 ...</div></div></div><div class="recent-post-item"><div class="post_cover left_radius"><a href="/posts/fcdbf51" title="Kubernetes集群: Kubernetes的Pod Deployment|DaemonSet|JobCronJob Controller">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kubernetes集群: Kubernetes的Pod Deployment|DaemonSet|JobCronJob Controller"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/fcdbf51" title="Kubernetes集群: Kubernetes的Pod Deployment|DaemonSet|JobCronJob Controller">Kubernetes集群: Kubernetes的Pod Deployment|DaemonSet|JobCronJob Controller</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-26T02:48:18.000Z" title="发表于 2020-04-26 10:48:18">2020-04-26</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-26T02:48:18.000Z" title="更新于 2020-04-26 10:48:18">2020-04-26</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Kubernetes/">Kubernetes</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Kubernetes/">Kubernetes</a></span></div><div class="content">RS 与 RC 与 Deployment 关联RC （ReplicationController ）主要的作用就是用来确保容器应用的副本数始终保持在用户定义的副本数 。即如果有容器异常退出，会自动创建新的Pod来替代；而如果异常多出来的容器也会自动回收 
+Kubernetes 官方建议使用 RS（ReplicaSet ） 替代 RC （ReplicationController ） 进行部署，RS 跟 RC 没有本质的不同，只是名字不一样，并且 RS 支持集合式的 selector
+
+12345678910111213141516171819202122apiVersion: extensions/v1beta1kind: ReplicaSetmetadata:  name: frontendspec:  replicas: 3  selector:    matchLabels:      tier: frontend  template:    metadata:      labels:        tier: frontend    spec:      containers ...</div></div></div><div class="recent-post-item"><div class="post_cover right_radius"><a href="/posts/73e22a9" title="Kubernetes集群: Kubernetes的Pod Controller">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Kubernetes集群: Kubernetes的Pod Controller"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/73e22a9" title="Kubernetes集群: Kubernetes的Pod Controller">Kubernetes集群: Kubernetes的Pod Controller</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-26T02:41:37.000Z" title="发表于 2020-04-26 10:41:37">2020-04-26</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-26T02:41:37.000Z" title="更新于 2020-04-26 10:41:37">2020-04-26</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Kubernetes/">Kubernetes</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Kubernetes/">Kubernetes</a></span></div><div class="content">什么是控制器Kubernetes 中内建了很多 controller（控制器），这些相当于一个状态机，用来控制 Pod 的具体状态和行为
+控制器类型
+ReplicationController 和 ReplicaSet
+Deployment
+DaemonSet
+StateFulSet
+Job/CronJob
+Horizontal Pod Autoscaling 
+
+
+
+
+ReplicationController 和 ReplicaSetReplicationController（RC）用来确保容器应用的副本数始终保持在用户定义的副本数，即如果有容器异常退出，会自动创建新的 Pod 来替代；而如果异常多出来的容器也会自动回收；
+在新版本的 Kubernetes 中建议使用 ReplicaSet 来取代 ReplicationController 。ReplicaSet 跟 ReplicationController 没有本质的不同，只是名字不一样，并且 ReplicaSet 支持集合式的 selector；
+DeploymentDeployment 为 Pod 和 ReplicaSet ...</div></div></div><div class="recent-post-item"><div class="post_cover left_radius"><a href="/posts/d5e5822f" title="【Java】Java开发手册-阿里巴巴（泰山版）">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【Java】Java开发手册-阿里巴巴（泰山版）"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/d5e5822f" title="【Java】Java开发手册-阿里巴巴（泰山版）">【Java】Java开发手册-阿里巴巴（泰山版）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-24T01:13:35.000Z" title="发表于 2020-04-24 09:13:35">2020-04-24</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-24T01:13:35.000Z" title="更新于 2020-04-24 09:13:35">2020-04-24</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/Java/">Java</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/Java/">Java</a><span class="article-meta__link">•</span><a class="article-meta__tags" href="/tags/Coding-Style/">Coding Style</a></span></div><div class="content">之前又在看 阿里巴巴 的《Java开发规范》的公开版，那会还是大学的时候，也没有什么真的重视它，只是说想起来了就注意一下，没想起来还是就这样吧。这一次的泰山版发布，基本上就稳了。所以就花点时间认真的观摩一下。毕竟是大神之作。虽然每个公司都有自己额一套规范，但是阿里的规范的标准化还是比较成型的。阿里出品，值得信赖。
+
+手册一上来就是命名的规范，但是作为一个阅读者，自然不是按照这个套路来看的。首先看的自然就是这个工程结构。
+工程结构应用分层【推荐】 默认是上层依赖下层
+
+就像图中的这种关系。
+
+开放接口层: 可直接封装 Service 方法暴露成 RPC 接口；通过 Web 封装成 Http 接口；网关控制层等。
+终端显示层: 各个端的模板渲染并执行显示的层
+WEB 层: 主要是对 访问控制进行转发，各类基本参数校验，或者不复用的业务简单处理等；
+Service层: 相对具体的业务逻辑服务层
+Manager层: 通用业务处理层: 它有如下特征:
+
+对第三方平台封转的层，预处理返回结果及转化异常信息
+对Service层通用能力的下沉，如缓存方案，中间件处理
+与DAO层交互，对多个DAO的组合 ...</div></div></div><div class="recent-post-item"><div class="post_cover right_radius"><a href="/posts/3afed7b9" title="【设计模式】| 原型模式">     <img class="post_bg" data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【设计模式】| 原型模式"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/3afed7b9" title="【设计模式】| 原型模式">【设计模式】| 原型模式</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-22T03:39:49.000Z" title="发表于 2020-04-22 11:39:49">2020-04-22</time><span class="article-meta__separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-04-22T03:39:49.000Z" title="更新于 2020-04-22 11:39:49">2020-04-22</time></span><span class="article-meta"><span class="article-meta__separator">|</span><i class="fas fa-inbox article-meta__icon"></i><a class="article-meta__categories" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></span><span class="article-meta tags"><span class="article-meta__separator">|</span><i class="fas fa-tag article-meta__icon"></i><a class="article-meta__tags" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a></span></div><div class="content">原型（Prototype）模式的定义如下：用一个已经创建的实例作为原型，通过复制该原型对象来创建一个和原型相同或相似的新对象。在这里，原型实例指定了要创建的对象的种类。用这种方式创建对象非常高效，根本无须知道对象创建的细节。在 Java 中有 Clone，因此这个原型模式用起来就很舒服。
+
+我们先看一个案例，我们现在来模拟一个邮件的发送。现在有一个邮件类:
+12345public class Mail &#123;    private String name;    private String emailAddress;    private String content;&#125;
+里面的一些基本方法啥的被省略了。再看一个工具类，这个工具类主要就是发送邮件的:
+12345678910public class MailUtil &#123;    public static void sendMail(Mail mail)&#123;        String output = &quot;向&#123;0&#125;同学，邮件地址&#123;1&#125;，邮件内容&#123 ...</div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/11/"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/13/"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside_content" id="aside_content"><div class="card-widget card-info"><div class="card-content"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">开发实习生</div><div class="author-info__description">寂寞单身猿</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">271</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">94</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">51</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/sun-iot"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/sun-iot" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:sunyang.iot@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div></div><div class="card-widget card-announcement"><div class="card-content"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="card-content"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/dc144ade" title="Alertmanager告警流程分析"><img data-lazy-src="https://blog-resource.gitee.io/prometheus/prometheus/prometheus.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alertmanager告警流程分析"/></a><div class="content"><a class="title" href="/posts/dc144ade" title="Alertmanager告警流程分析">Alertmanager告警流程分析</a><time datetime="2020-12-23T03:03:06.000Z" title="发表于 2020-12-23 11:03:06">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9aa81cdc" title="Linux数据盘挂载"><img data-lazy-src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux数据盘挂载"/></a><div class="content"><a class="title" href="/posts/9aa81cdc" title="Linux数据盘挂载">Linux数据盘挂载</a><time datetime="2020-12-23T03:01:30.000Z" title="发表于 2020-12-23 11:01:30">2020-12-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="InfluxDB 数据迁移方案测试以及风险性评估"/></a><div class="content"><a class="title" href="/posts/55aac069" title="InfluxDB 数据迁移方案测试以及风险性评估">InfluxDB 数据迁移方案测试以及风险性评估</a><time datetime="2020-12-10T01:03:48.000Z" title="发表于 2020-12-10 09:03:48">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Influx-Proxy部署流程以及风险点分析"/></a><div class="content"><a class="title" href="/posts/51eb7ca" title="Influx-Proxy部署流程以及风险点分析">Influx-Proxy部署流程以及风险点分析</a><time datetime="2020-12-10T01:02:46.000Z" title="发表于 2020-12-10 09:02:46">2020-12-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试"><img data-lazy-src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Influxdb_logo.svg/1200px-Influxdb_logo.svg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="influx-proxy无侵入式InfluxDB高可用方案测试"/></a><div class="content"><a class="title" href="/posts/61185b64" title="influx-proxy无侵入式InfluxDB高可用方案测试">influx-proxy无侵入式InfluxDB高可用方案测试</a><time datetime="2020-12-10T01:01:49.000Z" title="发表于 2020-12-10 09:01:49">2020-12-10</time></div></div></div></div></div><div class="card-widget card-categories"><div class="card-content"><div class="item-headline"><i class="fas fa-folder-open"></i><span>分类</span></div><ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Docker/"><span class="card-category-list-name">Docker</span><span class="card-category-list-count">7</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ELK/"><span class="card-category-list-name">ELK</span><span class="card-category-list-count">14</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ELK/Beats/"><span class="card-category-list-name">Beats</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ELK/Elastaticsearch/"><span class="card-category-list-name">Elastaticsearch</span><span class="card-category-list-count">12</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ELK/Logstash/"><span class="card-category-list-name">Logstash</span><span class="card-category-list-count">1</span></a></li></ul></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ETCD/"><span class="card-category-list-name">ETCD</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Elastaticsearch/"><span class="card-category-list-name">Elastaticsearch</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Flink/"><span class="card-category-list-name">Flink</span><span class="card-category-list-count">28</span></a></li>
+            <li class="card-category-list-item more is-center"><a class="card-category-list-link-more" href="/categories/">
+                <span>查看更多</span><i class="fas fa-angle-right"></i></a></li>
+            </ul></div></div><div class="card-widget card-tags"><div class="card-content"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/AlertManager/" style="font-size: 1.1em; color: #999">AlertManager</a> <a href="/tags/Alertmanager/" style="font-size: 1.13em; color: #999a9c">Alertmanager</a> <a href="/tags/Beats/" style="font-size: 1.1em; color: #999">Beats</a> <a href="/tags/BlockChain/" style="font-size: 1.1em; color: #999">BlockChain</a> <a href="/tags/CEP/" style="font-size: 1.1em; color: #999">CEP</a> <a href="/tags/Cadvisor/" style="font-size: 1.1em; color: #999">Cadvisor</a> <a href="/tags/Cassandra/" style="font-size: 1.43em; color: #99a6b9">Cassandra</a> <a href="/tags/Centos7/" style="font-size: 1.1em; color: #999">Centos7</a> <a href="/tags/Checkpointing/" style="font-size: 1.1em; color: #999">Checkpointing</a> <a href="/tags/Code/" style="font-size: 1.1em; color: #999">Code</a> <a href="/tags/Coding/" style="font-size: 1.33em; color: #99a2af">Coding</a> <a href="/tags/Coding-Style/" style="font-size: 1.1em; color: #999">Coding Style</a> <a href="/tags/Container/" style="font-size: 1.1em; color: #999">Container</a> <a href="/tags/Cortex/" style="font-size: 1.27em; color: #99a0a9">Cortex</a> <a href="/tags/DataSink/" style="font-size: 1.1em; color: #999">DataSink</a> <a href="/tags/DataWoreHouse/" style="font-size: 1.13em; color: #999a9c">DataWoreHouse</a> <a href="/tags/Docker/" style="font-size: 1.3em; color: #99a1ac">Docker</a> <a href="/tags/ELK/" style="font-size: 1.43em; color: #99a6b9">ELK</a> <a href="/tags/ETCD/" style="font-size: 1.13em; color: #999a9c">ETCD</a> <a href="/tags/Elastaticsearch/" style="font-size: 1.4em; color: #99a5b6">Elastaticsearch</a> <a href="/tags/Error/" style="font-size: 1.13em; color: #999a9c">Error</a> <a href="/tags/Filebeat/" style="font-size: 1.1em; color: #999">Filebeat</a> <a href="/tags/Firefox/" style="font-size: 1.1em; color: #999">Firefox</a> <a href="/tags/Flink/" style="font-size: 1.5em; color: #99a9bf">Flink</a> <a href="/tags/Flink%E5%B0%8F%E8%B4%B4%E5%A3%AB/" style="font-size: 1.1em; color: #999">Flink小贴士</a> <a href="/tags/Flume/" style="font-size: 1.13em; color: #999a9c">Flume</a> <a href="/tags/Git/" style="font-size: 1.23em; color: #999ea6">Git</a> <a href="/tags/Go/" style="font-size: 1.37em; color: #99a4b2">Go</a> <a href="/tags/GoLand/" style="font-size: 1.1em; color: #999">GoLand</a> <a href="/tags/Grafana/" style="font-size: 1.1em; color: #999">Grafana</a> <a href="/tags/HBase/" style="font-size: 1.3em; color: #99a1ac">HBase</a> <a href="/tags/HDFS/" style="font-size: 1.2em; color: #999da3">HDFS</a> <a href="/tags/Hadoop/" style="font-size: 1.3em; color: #99a1ac">Hadoop</a> <a href="/tags/Hive/" style="font-size: 1.13em; color: #999a9c">Hive</a> <a href="/tags/IDEA/" style="font-size: 1.1em; color: #999">IDEA</a> <a href="/tags/InfluxDB/" style="font-size: 1.47em; color: #99a8bc">InfluxDB</a> <a href="/tags/Interview/" style="font-size: 1.17em; color: #999c9f">Interview</a> <a href="/tags/JUC/" style="font-size: 1.1em; color: #999">JUC</a> <a href="/tags/Java/" style="font-size: 1.37em; color: #99a4b2">Java</a> <a href="/tags/Kafka/" style="font-size: 1.17em; color: #999c9f">Kafka</a></div></div></div><div class="card-widget card-archives"><div class="card-content"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/12/"><span class="card-archive-list-date">十二月 2020</span><span class="card-archive-list-count">8</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/11/"><span class="card-archive-list-date">十一月 2020</span><span class="card-archive-list-count">2</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/10/"><span class="card-archive-list-date">十月 2020</span><span class="card-archive-list-count">6</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/09/"><span class="card-archive-list-date">九月 2020</span><span class="card-archive-list-count">47</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/08/"><span class="card-archive-list-date">八月 2020</span><span class="card-archive-list-count">11</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/07/"><span class="card-archive-list-date">七月 2020</span><span class="card-archive-list-count">8</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/06/"><span class="card-archive-list-date">六月 2020</span><span class="card-archive-list-count">23</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2020/05/"><span class="card-archive-list-date">五月 2020</span><span class="card-archive-list-count">8</span></a></li><li class="card-archive-list-item more is-center"><a class="card-archive-list-link-more" href="/archives/">
+              <span>查看更多</span><i class="fas fa-angle-right"  ></i></a></li></ul></div></div><div class="card-widget card-webinfo"><div class="card-content"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">271</div></div><div class="webinfo-item"><div class="item-name">已运行时间 :</div><div class="item-count" id="runtimeshow" data-publishDate="2020-12-23T06:22:07.960Z"></div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">443.4k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2020-12-23T06:22:08.249Z"></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 开发实习生</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi Welcome to my <a  href="www.blog.sun-iot.xyz">开发实习生</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.spacingElementById('content-inner')
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.spacingElementById('content-inner')
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script defer="defer" id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="/js/third-party/canvas-nest.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script>(function(){
+  const bp = document.createElement('script');
+  const curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else{
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  bp.dataset.pjax = ''
+  const s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})()</script></div></body></html>

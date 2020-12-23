@@ -1,0 +1,15 @@
+# hexo robots.txt
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /categories/
+Allow: /tags/
+Allow: /about/
+Allow: /coding-life/
+
+Disallow: /js/
+Disallow: /css/
+Sitemap: https://sun-iot.github.io/sitemap.xml
+Sitemap: https://sun-iot.github.io/baidusitemap.xml
+Sitemap: http://www.blog.sun-iot.xyz/sitemap.xml
+Sitemap: http://www.blog.sun-iot.xyz/baidusitemap.xml
