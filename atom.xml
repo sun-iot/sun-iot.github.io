@@ -6,7 +6,7 @@
   <link href="http://www.blog.sun-iot.xyz/atom.xml" rel="self"/>
   
   <link href="http://www.blog.sun-iot.xyz/"/>
-  <updated>2020-12-25T05:50:55.000Z</updated>
+  <updated>2020-12-27T10:22:09.000Z</updated>
   <id>http://www.blog.sun-iot.xyz/</id>
   
   <author>
@@ -15,6 +15,26 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Ubuntu2004 wine-wechat输入中文字体为方块的解决</title>
+    <link href="http://www.blog.sun-iot.xyz/posts/3cab0c76"/>
+    <id>http://www.blog.sun-iot.xyz/posts/3cab0c76</id>
+    <published>2020-12-27T10:22:09.000Z</published>
+    <updated>2020-12-27T10:22:09.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="克隆-仓库"><a href="#克隆-仓库" class="headerlink" title="克隆 仓库"></a>克隆 仓库</h1><p>git clone <a href="https://gitee.com/wszqkzqk/deepin-wine-for-ubuntu.git">https://gitee.com/wszqkzqk/deepin-wine-for-ubuntu.git</a></p><h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>cd deepin-wine-for-ubuntu/<br>./install.sh</p><p>// KDE桌面或者其他安装出现错误执行 ./KDE-install.sh</p><h1 id="更新-wechat"><a href="#更新-wechat" class="headerlink" title="更新 wechat"></a>更新 wechat</h1><p>wget -qO- <a href="https://deepin-wine.i-m.dev/setup.sh">https://deepin-wine.i-m.dev/setup.sh</a> | sudo sh</p><p>微信：sudo apt-get install com.qq.weixin.deepin<br>QQ：sudo apt-get install com.qq.im.deepin<br>钉钉：sudo apt-get install com.dingtalk.deepin</p><p>说明： 由于新版变化，安装完成后需要注销重登录才能正常显示应用图标。</p><h1 id="安装美化工具"><a href="#安装美化工具" class="headerlink" title="安装美化工具"></a>安装美化工具</h1><p>sudo apt-get install gnome-shell-extension-top-icons-plus gnome-tweaks</p><h1 id="微信无法发送图片"><a href="#微信无法发送图片" class="headerlink" title="微信无法发送图片"></a>微信无法发送图片</h1><p> sudo apt install libjpeg62:i386</p><h1 id="微信输入中文为-方块-使用通用字体微软雅黑"><a href="#微信输入中文为-方块-使用通用字体微软雅黑" class="headerlink" title="微信输入中文为 方块 - 使用通用字体微软雅黑"></a>微信输入中文为 方块 - 使用通用字体微软雅黑</h1><p>百度网盘链接: <a href="https://pan.baidu.com/s/1rkjkmGJlpdaijCEWi7TZIw">https://pan.baidu.com/s/1rkjkmGJlpdaijCEWi7TZIw</a> 提取码: btxw</p><p>cp msyh.ttc ~/.deepinwine/Deepin-WeChat/drive_c/windows/Fonts</p><p>gedit ~/.deepinwine/Deepin-WeChat/system.reg</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;MS Shell Dlg&quot;</span>=<span class="string">&quot;msyh&quot;</span></span><br><span class="line"><span class="string">&quot;MS Shell Dlg 2&quot;</span>=<span class="string">&quot;msyh&quot;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure><p>gedit msyh_config.reg</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">REGEDIT4</span><br><span class="line">[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink]</span><br><span class="line"><span class="string">&quot;Lucida Sans Unicode&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;Microsoft Sans Serif&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;MS Sans Serif&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;Tahoma&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;Tahoma Bold&quot;</span>=<span class="string">&quot;msyhbd.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;msyh&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;Arial&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br><span class="line"><span class="string">&quot;Arial Black&quot;</span>=<span class="string">&quot;msyh.ttc&quot;</span></span><br></pre></td></tr></table></figure><p>deepin-wine regedit msyh_config.reg</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;克隆-仓库&quot;&gt;&lt;a href=&quot;#克隆-仓库&quot; class=&quot;headerlink&quot; title=&quot;克隆 仓库&quot;&gt;&lt;/a&gt;克隆 仓库&lt;/h1&gt;&lt;p&gt;git clone &lt;a href=&quot;https://gitee.com/wszqkzqk/deepin-wine-</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>【监控】Cortex配置文件-1.2.0</title>
@@ -298,7 +318,7 @@
   </entry>
   
   <entry>
-    <title>MD</title>
+    <title>MD语法学习</title>
     <link href="http://www.blog.sun-iot.xyz/posts/75bfa63e"/>
     <id>http://www.blog.sun-iot.xyz/posts/75bfa63e</id>
     <published>2020-11-11T01:16:25.000Z</published>
@@ -319,7 +339,7 @@
   </entry>
   
   <entry>
-    <title>ETCD</title>
+    <title>ETCD的数据压缩</title>
     <link href="http://www.blog.sun-iot.xyz/posts/4cde6830"/>
     <id>http://www.blog.sun-iot.xyz/posts/4cde6830</id>
     <published>2020-11-05T08:24:50.000Z</published>
@@ -416,30 +436,6 @@
     
     
     <category term="Firefox" scheme="http://www.blog.sun-iot.xyz/tags/Firefox/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Git切换远程分支</title>
-    <link href="http://www.blog.sun-iot.xyz/posts/a6c9b8b3"/>
-    <id>http://www.blog.sun-iot.xyz/posts/a6c9b8b3</id>
-    <published>2020-10-22T06:28:47.000Z</published>
-    <updated>2020-10-22T06:28:47.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="分支查看"><a href="#分支查看" class="headerlink" title="分支查看"></a>分支查看</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看远程分支</span></span><br><span class="line">git branch -a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看本地分支</span></span><br><span class="line">git branch</span><br></pre></td></tr></table></figure><h2 id="分支切换"><a href="#分支切换" class="headerlink" title="分支切换"></a>分支切换</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 远程分支切换</span></span><br><span class="line">git checkout -b &lt;local_branch&gt; origin/&lt;remote_branch&gt;</span><br><span class="line"></span><br><span class="line">eg: </span><br><span class="line"></span><br><span class="line">git checkout -b 1.7.8 origin/1.7.8</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地分支切换</span></span><br><span class="line">git checkout 1.7.8</span><br></pre></td></tr></table></figure>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h2 id=&quot;分支查看&quot;&gt;&lt;a href=&quot;#分支查看&quot; class=&quot;headerlink&quot; title=&quot;分支查看&quot;&gt;&lt;/a&gt;分支查看&lt;/h2&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre</summary>
-      
-    
-    
-    
-    <category term="Git" scheme="http://www.blog.sun-iot.xyz/categories/Git/"/>
-    
-    
-    <category term="Git" scheme="http://www.blog.sun-iot.xyz/tags/Git/"/>
     
   </entry>
   
