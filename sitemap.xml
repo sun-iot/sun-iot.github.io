@@ -2006,13 +2006,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/Redis/</loc>
-    <lastmod>2020-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Centos7/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
@@ -2035,6 +2028,13 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/</loc>
+    <lastmod>2020-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/Redis/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2104,13 +2104,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/Tips/</loc>
-    <lastmod>2020-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Ubutun/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
@@ -2118,21 +2111,14 @@
   </url>
   
   <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/Tips/</loc>
+    <lastmod>2020-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Spring/</loc>
-    <lastmod>2020-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/Spark/</loc>
-    <lastmod>2020-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2202,6 +2188,13 @@
   </url>
   
   <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/Spark/</loc>
+    <lastmod>2020-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://www.blog.sun-iot.xyz/tags/NoSQL/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
@@ -2210,6 +2203,13 @@
   
   <url>
     <loc>http://www.blog.sun-iot.xyz/tags/Cassandra/</loc>
+    <lastmod>2020-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2617,14 +2617,14 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Java/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/MySQL/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/MySQL/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/Java/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2680,14 +2680,14 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Tips/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/Ubutun/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Ubutun/</loc>
+    <loc>http://www.blog.sun-iot.xyz/categories/Tips/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -2701,20 +2701,6 @@
   </url>
   
   <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/Spark/</loc>
-    <lastmod>2020-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://www.blog.sun-iot.xyz/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/</loc>
-    <lastmod>2020-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://www.blog.sun-iot.xyz/categories/Flink/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
@@ -2722,7 +2708,21 @@
   </url>
   
   <url>
+    <loc>http://www.blog.sun-iot.xyz/categories/Spark/</loc>
+    <lastmod>2020-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://www.blog.sun-iot.xyz/categories/NoSQL/</loc>
+    <lastmod>2020-12-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://www.blog.sun-iot.xyz/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88/</loc>
     <lastmod>2020-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
